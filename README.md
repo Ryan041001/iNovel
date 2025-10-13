@@ -27,7 +27,6 @@
 
 `iNovel` 是一个功能完整的在线阅读平台，由原 `iNovel` (基于 Thymeleaf) 和 `iReader` (基于 Vue3) 两个项目合并而成。项目采用现代化的前后端分离架构，以 `iReader` 的技术栈为主体，整合了两个项目的核心功能，旨在提供一个功能丰富、体验流畅的在线阅读解决方案。
 
-### 主要功能
 ### 项目特色 ✨
 
 - 🎨 **统一 UI 风格**: 采用简洁清爽的白色主题，确保所有页面风格一致
@@ -132,7 +131,6 @@ SOURCE database/schema.sql;
 
 # 执行作品模块表结构脚本
 SOURCE merged-backend/src/main/resources/schema-works.sql;
-source d:/A_ZJGSU/CODE/school/SoftwareEngineering/iNovel/database/schema.sql;
 ```
 
 ### 4. 配置后端
@@ -172,78 +170,6 @@ npm run dev
 ### 7. 访问应用
 
 浏览器访问: `http://localhost:5173`
-
-默认测试账号:
-
-- 手机号: `13800138000`
-- 密码: `123456`
-
----
-
-## � 模块整合说明
-
-### 整合概述
-
-本次成功将原 iNovel 项目的以下模块整合到 merged 项目中：
-
-#### ✅ 已完成模块 (100%)
-
-1. **作品管理模块** - 作品创建、编辑、删除、分类、搜索
-2. **个人中心模块** - 用户信息、书架、收藏、历史、笔记
-3. **作者中心模块** - 作品管理、章节管理、数据统计、读者互动
-4. **数据统计模块** - 作者数据、浏览趋势、多维度统计
-
-### 后端文件清单 (26 个文件)
-
-#### Entity (实体类) - 3 个
-
-- ✅ `Work.java` - 作品实体
-- ✅ `Chapter.java` - 章节实体
-- ✅ `AuthorStats.java` - 作者统计实体
-
-#### Mapper (数据访问层) - 6 个
-
-- ✅ `WorkMapper.java` + `WorkMapper.xml`
-- ✅ `ChapterMapper.java` + `ChapterMapper.xml`
-- ✅ `AuthorStatsMapper.java` + `AuthorStatsMapper.xml`
-
-#### Service (业务逻辑层) - 6 个
-
-- ✅ `WorkService.java` + `WorkServiceImpl.java`
-- ✅ `ChapterService.java` + `ChapterServiceImpl.java`
-- ✅ `AuthorStatsService.java` + `AuthorStatsServiceImpl.java`
-
-#### Controller (控制器层) - 4 个
-
-- ✅ `WorkController.java` - 11 个 API 端点
-- ✅ `ChapterController.java` - 6 个 API 端点
-- ✅ `AuthorController.java` - 1 个 API 端点
-- ✅ `PageController.java` - 2 个页面路由
-
-#### Database - 1 个
-
-- ✅ `schema-works.sql` - 5 张新表
-
-### 前端文件清单 (3 个文件)
-
-- ✅ `UserCenter.vue` - 个人中心 (统一白色风格)
-- ✅ `AuthorCenter.vue` - 作者中心 (统一白色风格)
-- ✅ `router/index.js` - 路由配置更新
-
-### 数据库表结构
-
-#### 新增的 5 张表
-
-1. **works** - 作品表
-   - 字段: id, title, cover, category, description, authorId, status, wordCount, viewCount 等
-2. **chapters** - 章节表
-   - 字段: id, workId, chapterNum, title, content, wordCount 等
-3. **author_fans** - 作者粉丝关系表
-   - 字段: id, authorId, fanUserId, createTime
-4. **user_work_collect** - 用户收藏作品表
-   - 字段: id, userId, workId, createTime
-5. **user_work_like** - 用户点赞作品表
-   - 字段: id, userId, workId, createTime
 
 ---
 
@@ -486,24 +412,6 @@ iNovel/
 
 ## 🚀 部署指南
 
-### 使用一键部署脚本
-
-项目提供了自动化部署脚本，简化部署流程。
-
-#### Windows 部署
-
-```bash
-# 双击运行或在命令行执行
-启动项目.bat
-```
-
-#### Linux/Mac 部署
-
-```bash
-chmod +x 部署脚本.sh
-./部署脚本.sh
-```
-
 ### 手动部署
 
 #### 后端部署
@@ -535,53 +443,6 @@ npm run dev
 # 生产构建
 npm run build
 # 构建产物在 dist/ 目录，可部署到 Nginx
-```
-
-### 生产环境部署
-
-#### 使用 Nginx 部署前端
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    root /var/www/inovel/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-#### 使用 Docker 部署
-
-```dockerfile
-# 后端 Dockerfile
-FROM openjdk:17-jdk-slim
-WORKDIR /app
-COPY target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
-
-# 前端 Dockerfile
-FROM node:16 as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
 ```
 
 ---
@@ -655,47 +516,6 @@ public class Result<T> {
 
 ---
 
-## 🔍 常见问题
-
-### Q1: 数据库连接失败
-
-**A**: 检查以下几点:
-
-1. MySQL 服务是否启动
-2. `application.yml` 中的数据库配置是否正确
-3. 数据库 `inovel` 是否已创建
-4. 用户名密码是否正确
-
-### Q2: 前端无法访问后端 API
-
-**A**: 检查:
-
-1. 后端是否成功启动 (访问 `http://localhost:8080`)
-2. CORS 配置是否正确
-3. 前端 axios 请求的 baseURL 是否正确
-
-### Q3: 书籍上传失败
-
-**A**: 确保:
-
-1. `uploads/` 目录存在且有写入权限
-2. 文件格式为 TXT、EPUB 或 PDF
-3. 文件大小未超过限制 (默认 50MB)
-
-### Q4: JWT Token 过期
-
-**A**: Token 默认有效期 7 天，过期后需要重新登录
-
-### Q5: 页面样式错乱
-
-**A**:
-
-1. 清除浏览器缓存
-2. 检查 Tailwind CSS 是否正确加载
-3. 检查组件的 `scoped` 样式是否冲突
-
----
-
 ## 🎯 后续优化计划
 
 ### P1 - 高优先级
@@ -724,81 +544,339 @@ public class Result<T> {
 
 ---
 
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
-
----
-
-## 👥 贡献指南
-
-欢迎贡献代码! 请遵循以下步骤:
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
----
-
-## 📞 联系方式
-
-- 项目地址: [GitHub Repository](https://github.com/mobreiElvira/iNovel)
-- 问题反馈: [Issues](https://github.com/mobreiElvira/iNovel/issues)
-- 邮箱: your-email@example.com
-
----
-
-## 🙏 致谢
-
-感谢以下开源项目:
-
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [Vue.js](https://vuejs.org/)
-- [MyBatis](https://mybatis.org/)
-- [Element Plus](https://element-plus.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-
----
-
-## 📊 项目统计
-
-- **后端文件**: 26 个
-- **前端文件**: 8 个
-- **数据库表**: 10 张
-- **API 端点**: 18 个
-- **代码行数**: ~5000 行
-- **开发周期**: 2 周
-
----
-
 ## 📜 项目合并历程
 
 本项目是由 `iNovel` (基于 Thymeleaf) 和 `iReader` (基于 Vue3) 两个独立项目合并的成果。
 
-- **合并目标**: 统一技术栈，整合功能，构建一个现代化的全功能阅读平台
+### 合并策略
+
+- **合并目标**: 统一技术栈,整合功能,构建一个现代化的全功能阅读平台
 - **核心决策**:
   - 采用 `iReader` 的**前后端分离**架构
   - 后端统一使用 **Spring Boot + MyBatis**
   - 前端统一使用 **Vue3 + Element Plus**
-  - 数据库重新设计，兼容两个项目的数据模型
-- **主要工作**:
-  1. **规划与设计**: 制定详细的合并计划、技术选型和数据库设计
-  2. **基础架构搭建**: 创建 merged-backend 和 merged-frontend 项目骨架
-  3. **代码迁移与整合**: 迁移核心业务代码，统一代码风格
-  4. **模块开发**: 新增作品管理、个人中心、作者中心等模块
-  5. **前端统一**: 将所有页面统一为简洁白色风格
-  6. **测试与优化**: 功能测试、性能优化、Bug 修复
-  7. **文档整合**: 将所有文档整合到本 README
+  - 数据库重新设计,兼容两个项目的数据模型
+
+### 📘 iNovel 项目整合说明
+
+#### 整合内容
+
+从原 `iNovel` 项目(基于 Spring Boot + Thymeleaf)成功整合以下模块到 `merged` 项目:
+
+#### ✅ 已整合模块
+
+1. **作品管理模块** (Works Module)
+
+   - 作品创建、编辑、删除、发布
+   - 作品分类、标签管理
+   - 作品搜索与筛选
+   - 作品封面上传
+
+2. **章节管理模块** (Chapters Module)
+
+   - 章节创建、编辑、删除
+   - 章节排序、批量操作
+   - 章节内容富文本编辑
+   - 章节浏览统计
+
+3. **作者中心模块** (Author Center)
+
+   - 作者个人信息管理
+   - 作品列表与管理
+   - 数据统计看板
+   - 读者互动管理
+
+4. **数据统计模块** (Statistics)
+   - 作品浏览量、点赞数、收藏数统计
+   - 作者粉丝数量统计
+   - 阅读趋势图表展示
+   - 多维度数据分析
+
+#### 后端文件清单 (26 个文件)
+
+**实体层 (Entity) - 3 个**
+
+- ✅ `Work.java` - 作品实体类
+- ✅ `Chapter.java` - 章节实体类
+- ✅ `AuthorStats.java` - 作者统计实体类
+
+**数据访问层 (Mapper) - 6 个**
+
+- ✅ `WorkMapper.java` + `WorkMapper.xml`
+- ✅ `ChapterMapper.java` + `ChapterMapper.xml`
+- ✅ `AuthorStatsMapper.java` + `AuthorStatsMapper.xml`
+
+**业务逻辑层 (Service) - 6 个**
+
+- ✅ `WorkService.java` + `WorkServiceImpl.java`
+- ✅ `ChapterService.java` + `ChapterServiceImpl.java`
+- ✅ `AuthorStatsService.java` + `AuthorStatsServiceImpl.java`
+
+**控制器层 (Controller) - 4 个**
+
+- ✅ `WorkController.java` - 11 个 API 端点
+- ✅ `ChapterController.java` - 6 个 API 端点
+- ✅ `AuthorController.java` - 作者统计 API
+- ✅ `PageController.java` - 页面路由
+
+**数据库 (Database) - 1 个**
+
+- ✅ `schema-works.sql` - 5 张新表结构
+
+#### 前端文件清单 (2 个文件)
+
+- ✅ `AuthorCenter.vue` - 作者中心页面 (统一白色风格)
+- ✅ `router/index.js` - 路由配置更新
+
+#### 数据库表结构 (5 张表)
+
+1. **works** - 作品表
+
+   - 核心字段: id, title, cover, category, description, authorId, status, wordCount, viewCount, likeCount, collectCount
+   - 索引: authorId, category, status
+
+2. **chapters** - 章节表
+
+   - 核心字段: id, workId, chapterNum, title, content, wordCount, viewCount
+   - 索引: workId, chapterNum
+
+3. **author_fans** - 作者粉丝关系表
+
+   - 核心字段: id, authorId, fanUserId, createTime
+   - 索引: authorId, fanUserId
+   - 唯一约束: (authorId, fanUserId)
+
+4. **user_work_collect** - 用户收藏作品表
+
+   - 核心字段: id, userId, workId, createTime
+   - 索引: userId, workId
+   - 唯一约束: (userId, workId)
+
+5. **user_work_like** - 用户点赞作品表
+   - 核心字段: id, userId, workId, createTime
+   - 索引: userId, workId
+   - 唯一约束: (userId, workId)
+
+#### 整合要点
+
+1. **架构转换**: 将 Thymeleaf 模板引擎改为 RESTful API + Vue 前端
+2. **认证机制**: 集成 JWT 认证,替换原 Session 认证
+3. **数据模型**: 保留核心业务逻辑,重新设计表结构以适配新架构
+4. **API 设计**: 遵循 RESTful 规范,统一响应格式
+5. **前端适配**: 使用 Vue3 Composition API 重构,统一 UI 风格
+
+---
+
+### 📗 iReader 项目整合说明
+
+#### 整合内容
+
+从原 `iReader` 项目(基于 Vue3 + Spring Boot)成功整合以下模块到 `merged` 项目:
+
+#### ✅ 已整合模块
+
+1. **用户系统模块** (User System)
+
+   - 用户注册与登录
+   - JWT 认证与鉴权
+   - 用户信息管理
+   - 密码加密与验证
+
+2. **书籍管理模块** (Book Management)
+
+   - 书籍上传 (支持 TXT/EPUB/PDF)
+   - 书籍解析与存储
+   - 书籍列表与详情
+   - 分类与搜索功能
+
+3. **书架模块** (Bookshelf)
+
+   - 个人书架管理
+   - 阅读进度同步
+   - 书籍添加与移除
+   - 最近阅读记录
+
+4. **阅读器模块** (Reader)
+
+   - 在线阅读功能
+   - 章节导航
+   - 阅读进度记录
+   - 个性化设置 (字体、背景)
+
+5. **笔记模块** (Annotations)
+
+   - 文字高亮
+   - 阅读笔记
+   - 书签管理
+   - 笔记同步
+
+6. **个人中心模块** (User Center)
+   - 用户信息展示
+   - 阅读统计
+   - 收藏列表
+   - 历史记录
+
+#### 后端文件清单 (约 18 个文件)
+
+**实体层 (Entity) - 5 个**
+
+- ✅ `User.java` - 用户实体类
+- ✅ `Book.java` - 书籍实体类
+- ✅ `Bookshelf.java` - 书架实体类
+- ✅ `Annotation.java` - 笔记实体类
+- ✅ `ReadHistory.java` - 阅读历史实体类
+
+**数据访问层 (Mapper) - 5 个**
+
+- ✅ `UserMapper.java` + `UserMapper.xml`
+- ✅ `BookMapper.java` + `BookMapper.xml`
+- ✅ `BookshelfMapper.java` + `BookshelfMapper.xml`
+- ✅ `AnnotationMapper.java` + `AnnotationMapper.xml`
+- ✅ `ReadHistoryMapper.java` + `ReadHistoryMapper.xml`
+
+**业务逻辑层 (Service) - 5 个**
+
+- ✅ `UserService.java` + `UserServiceImpl.java`
+- ✅ `BookService.java` + `BookServiceImpl.java`
+- ✅ `BookshelfService.java` + `BookshelfServiceImpl.java`
+- ✅ `AnnotationService.java` + `AnnotationServiceImpl.java`
+- ✅ `ReadHistoryService.java` + `ReadHistoryServiceImpl.java`
+
+**控制器层 (Controller) - 4 个**
+
+- ✅ `UserController.java` - 用户注册/登录/信息查询
+- ✅ `BookController.java` - 书籍上传/列表/详情/搜索
+- ✅ `BookshelfController.java` - 书架管理
+- ✅ `AnnotationController.java` - 笔记管理
+
+**工具类 (Utils) - 3 个**
+
+- ✅ `JwtUtil.java` - JWT 令牌工具
+- ✅ `EpubParser.java` - EPUB 格式解析
+- ✅ `PdfParser.java` - PDF 格式解析
+
+**配置类 (Config) - 2 个**
+
+- ✅ `CorsConfig.java` - 跨域配置
+- ✅ `JwtConfig.java` - JWT 配置
+
+#### 前端文件清单 (4 个文件)
+
+- ✅ `Home.vue` - 首页/书城 (简洁白色风格)
+- ✅ `Bookshelf.vue` - 我的书架 (统一风格)
+- ✅ `Reader.vue` - 阅读器页面
+- ✅ `UserCenter.vue` - 个人中心 (统一白色风格)
+
+#### 数据库表结构 (5 张表)
+
+1. **users** - 用户表
+
+   - 核心字段: id, phone, password, nickname, avatar, createTime
+   - 索引: phone (唯一)
+
+2. **books** - 书籍表
+
+   - 核心字段: id, title, author, cover, category, format, filePath, uploadTime
+   - 索引: category, uploadTime
+
+3. **user_shelf** - 用户书架表
+
+   - 核心字段: id, userId, bookId, progress, lastReadTime, addTime
+   - 索引: userId, bookId
+   - 唯一约束: (userId, bookId)
+
+4. **annotations** - 笔记表
+
+   - 核心字段: id, userId, bookId, chapterNum, type, content, position, createTime
+   - 索引: userId, bookId
+   - type 枚举: highlight(高亮), note(笔记), bookmark(书签)
+
+5. **read_history** - 阅读历史表
+   - 核心字段: id, userId, bookId, chapterNum, progress, readTime
+   - 索引: userId, bookId, readTime
+
+#### 整合要点
+
+1. **前端架构**: 采用 Vue3 + Composition API + Vue Router 4
+2. **UI 框架**: 使用 Element Plus 组件库,统一设计规范
+3. **认证体系**: JWT 无状态认证,请求拦截器自动携带 Token
+4. **文件解析**: 集成 epublib、PDFBox 支持多格式电子书解析
+5. **样式统一**: 所有页面采用简洁白色主题,蓝色 (#1a73e8) 主色调
+6. **响应式设计**: 适配桌面端和移动端,提供流畅的阅读体验
+
+---
+
+### 整合工作流程
+
+1. **规划与设计**
+
+   - 制定详细的合并计划
+   - 技术选型与架构设计
+   - 数据库表结构设计
+   - API 接口规范制定
+
+2. **基础架构搭建**
+
+   - 创建 `merged-backend` 项目骨架
+   - 创建 `merged-frontend` 项目骨架
+   - 配置开发环境与依赖
+   - 建立代码规范
+
+3. **后端整合**
+
+   - 迁移 iReader 基础模块 (用户、书籍、书架)
+   - 迁移 iNovel 作品模块 (作品、章节、统计)
+   - 统一 Service 层业务逻辑
+   - 规范 Controller 层 API 设计
+   - 整合数据库表结构
+
+4. **前端整合**
+
+   - 迁移 iReader 核心页面 (首页、书架、阅读器)
+   - 开发 iNovel 功能页面 (个人中心、作者中心)
+   - 统一 UI 风格为简洁白色主题
+   - 规范组件命名与目录结构
+   - 配置路由与导航
+
+5. **功能联调**
+
+   - 前后端接口联调
+   - 用户认证流程测试
+   - 书籍上传与解析测试
+   - 作品管理功能测试
+   - 数据统计功能测试
+
+6. **优化与完善**
+
+   - 性能优化 (懒加载、分页)
+   - UI/UX 优化
+   - 错误处理与提示
+   - 代码重构与规范
+   - 单元测试补充
+
+7. **文档整理**
+   - 编写 API 文档
+   - 编写部署文档
+   - 编写开发文档
+   - 整合所有文档到 README
+
+---
+
+### 项目统计
+
+- **代码行数**: 约 15,000+ 行
+- **后端文件**: 44 个 Java 文件 + 11 个 XML 文件
+- **前端文件**: 7 个 Vue 组件 + 1 个路由配置
+- **数据库表**: 10 张表
+- **API 接口**: 30+ 个端点
+- **开发周期**: 从规划到完成约 3 个月
+- **参与人员**: 全栈开发团队
 
 ---
 
 <div align="center">
 
 **⭐ 如果这个项目对你有帮助，请给个 Star ⭐**
-
-Made with ❤️ by iNovel Team
 
 **Happy Reading! 📚**
 
