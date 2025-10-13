@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: inovel-backend
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/inovel?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  servlet:
+    multipart:
+      # 单个文件上传的最大大小
+      max-file-size: 50MB
+      # 整个请求的最大大小
+      max-request-size: 100MB
+
+  # 文件上传配置
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.inovel.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT配置
+jwt:
+  secret: inovel-secret-key-for-jwt-token-generation-2025
+  expiration: 604800000 # 7天(毫秒)
+
+# 文件上传路径
+file:
+  upload:
+    path: uploads/books/
+
+# 日志配置
+logging:
+  level:
+    com.inovel: debug
+    com.inovel.mapper: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /
