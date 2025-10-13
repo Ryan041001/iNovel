@@ -284,7 +284,8 @@ export default {
         nickname: "读者小明",
         phone: "138****8888",
         email: "reader@example.com",
-        avatar: "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDINho4O3zb7IlJpv-ubh9RS5dt4IrgwAC8RsAAmykCFfh2rkqr_C9ATYE.jpg",
+        avatar:
+          "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDINho4O3zb7IlJpv-ubh9RS5dt4IrgwAC8RsAAmykCFfh2rkqr_C9ATYE.jpg",
       },
       editForm: {
         nickname: "",

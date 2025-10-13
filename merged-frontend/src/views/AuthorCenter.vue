@@ -5,7 +5,9 @@
       <div class="nav-left">
         <router-link to="/" class="nav-item">首页</router-link>
         <router-link to="/bookshelf" class="nav-item">我的书架</router-link>
-        <router-link to="/author-center" class="nav-item active">作者中心</router-link>
+        <router-link to="/author-center" class="nav-item active"
+          >作者中心</router-link
+        >
         <router-link to="/user-center" class="nav-item">个人中心</router-link>
       </div>
       <div class="nav-right">
@@ -121,7 +123,9 @@
                 <div class="work-stats-row">
                   <div class="work-stat">
                     <span class="stat-label">字数</span>
-                    <span class="stat-value">{{ formatNumber(work.wordCount) }}</span>
+                    <span class="stat-value">{{
+                      formatNumber(work.wordCount)
+                    }}</span>
                   </div>
                   <div class="work-stat">
                     <span class="stat-label">浏览</span>
@@ -133,10 +137,16 @@
                   </div>
                 </div>
                 <div class="work-actions">
-                  <button class="work-btn edit-btn" @click.stop="editWork(work)">
+                  <button
+                    class="work-btn edit-btn"
+                    @click.stop="editWork(work)"
+                  >
                     ✏️ 编辑
                   </button>
-                  <button class="work-btn chapter-btn" @click.stop="manageChapters(work)">
+                  <button
+                    class="work-btn chapter-btn"
+                    @click.stop="manageChapters(work)"
+                  >
                     📖 章节
                   </button>
                 </div>
@@ -147,7 +157,9 @@
           <div v-if="myWorks.length === 0" class="empty-state">
             <div class="empty-icon">📚</div>
             <p class="empty-text">还没有发布任何作品</p>
-            <button class="goto-btn" @click="showCreateWork = true">创建第一部作品</button>
+            <button class="goto-btn" @click="showCreateWork = true">
+              创建第一部作品
+            </button>
           </div>
         </div>
 
@@ -187,7 +199,11 @@
                 </div>
               </div>
               <div class="chart-labels">
-                <span v-for="(data, index) in chartData" :key="index" class="chart-label">
+                <span
+                  v-for="(data, index) in chartData"
+                  :key="index"
+                  class="chart-label"
+                >
                   {{ data.label }}
                 </span>
               </div>
@@ -202,8 +218,16 @@
           </div>
 
           <div class="comments-list">
-            <div v-for="comment in comments" :key="comment.id" class="comment-card">
-              <img :src="comment.userAvatar" alt="用户头像" class="comment-avatar" />
+            <div
+              v-for="comment in comments"
+              :key="comment.id"
+              class="comment-card"
+            >
+              <img
+                :src="comment.userAvatar"
+                alt="用户头像"
+                class="comment-avatar"
+              />
               <div class="comment-content">
                 <div class="comment-header">
                   <span class="comment-user">{{ comment.userName }}</span>
@@ -226,7 +250,11 @@
     </div>
 
     <!-- 创建作品弹窗 -->
-    <div v-if="showCreateWork" class="modal-overlay" @click.self="showCreateWork = false">
+    <div
+      v-if="showCreateWork"
+      class="modal-overlay"
+      @click.self="showCreateWork = false"
+    >
       <div class="modal-content modal-large">
         <h3 class="modal-title">✨ 创建新作品</h3>
         <form @submit.prevent="createWork" class="create-form">
@@ -264,7 +292,11 @@
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">✨ 创建作品</button>
-            <button type="button" @click="showCreateWork = false" class="btn btn-secondary">
+            <button
+              type="button"
+              @click="showCreateWork = false"
+              class="btn btn-secondary"
+            >
               取消
             </button>
           </div>
@@ -273,17 +305,17 @@
     </div>
 
     <!-- 设置弹窗 -->
-    <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
+    <div
+      v-if="showSettings"
+      class="modal-overlay"
+      @click.self="showSettings = false"
+    >
       <div class="modal-content">
         <h3 class="modal-title">⚙️ 作者设置</h3>
         <div class="settings-form">
           <div class="form-group">
             <label class="form-label">笔名</label>
-            <input
-              type="text"
-              class="form-input"
-              placeholder="请输入笔名"
-            />
+            <input type="text" class="form-input" placeholder="请输入笔名" />
           </div>
           <div class="form-group">
             <label class="form-label">个人简介</label>
@@ -295,7 +327,9 @@
           </div>
           <div class="form-actions">
             <button class="btn btn-primary" @click="saveSettings">保存</button>
-            <button class="btn btn-secondary" @click="showSettings = false">取消</button>
+            <button class="btn btn-secondary" @click="showSettings = false">
+              取消
+            </button>
           </div>
         </div>
       </div>
