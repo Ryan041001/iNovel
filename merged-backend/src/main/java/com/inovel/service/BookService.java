@@ -6,6 +6,7 @@ import com.inovel.mapper.BookMapper;
 import com.inovel.mapper.BookContentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class BookService {
     /**
      * 获取书籍列表，可以按关键词和分类过滤
      */
+    @Transactional(readOnly = true)
     public List<Book> getBookList(String keyword, String category) {
         if (keyword != null && !keyword.isEmpty() && category != null && !category.isEmpty()) {
             // 同时按关键词和分类查询
@@ -40,9 +42,11 @@ public class BookService {
     public void save(Book book) {
         bookMapper.insert(book);
     }
+
     /**
      * 根据 ID 获取书籍详情
      */
+    @Transactional(readOnly = true)
     public Book getBookDetail(Long id) {
         return bookMapper.findById(id);
     }
@@ -50,6 +54,7 @@ public class BookService {
     /**
      * 获取书籍内容（按章节顺序）
      */
+    @Transactional(readOnly = true)
     public List<BookContent> getBookContent(Long bookId) {
         return bookContentMapper.findByBookId(bookId);
     }
@@ -64,6 +69,7 @@ public class BookService {
     /**
      * 更新书籍
      */
+    @Transactional
     public void updateBook(Book book) {
         bookMapper.update(book);
     }
@@ -71,6 +77,7 @@ public class BookService {
     /**
      * 删除书籍
      */
+    @Transactional
     public void deleteBook(Long id) {
         bookMapper.delete(id);
     }
