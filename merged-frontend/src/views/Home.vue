@@ -4,6 +4,7 @@
     <header class="header">
       <div class="nav-left">
         <router-link to="/bookshelf" class="nav-item">我的书架</router-link>
+        <router-link to="/author-center" class="nav-item">作者中心</router-link>
       </div>
       <div class="nav-right">
         <!-- 头像 -->
@@ -15,43 +16,45 @@
         />
         <!-- 下拉菜单 -->
         <div v-if="menuVisible" class="dropdown-menu">
+          <div class="menu-item" @click="goToUserCenter">个人中心</div>
           <div class="menu-item" @click="goToShelf">我的书架</div>
+          <div class="menu-item" @click="goToAuthorCenter">作者中心</div>
+          <div class="menu-item menu-divider"></div>
           <div class="menu-item" @click="logout">退出登录</div>
         </div>
       </div>
     </header>
 
-<!-- 搜索栏区域 -->
-<div class="search-section">
-  <h1 class="title">书城</h1>
-  <div class="search-bar">
-    <input
-      type="text"
-      v-model="searchKeyword"
-      placeholder="搜索书名或作者"
-      @keyup.enter="searchBooks"
-    />
-    <button class="search-btn" @click="searchBooks">搜索</button>
-  </div>
-</div>
+    <!-- 搜索栏区域 -->
+    <div class="search-section">
+      <h1 class="title">书城</h1>
+      <div class="search-bar">
+        <input
+          type="text"
+          v-model="searchKeyword"
+          placeholder="搜索书名或作者"
+          @keyup.enter="searchBooks"
+        />
+        <button class="search-btn" @click="searchBooks">搜索</button>
+      </div>
+    </div>
 
     <!-- 书籍列表 -->
     <!-- Home.vue 片段 -->
-<main class="book-list">
-  <div 
-    v-for="book in books" 
-    :key="book.id" 
-    class="book-card"
-    @click="goToReader(book.id)"   
->
-    <img :src="book.cover" alt="封面" class="book-cover" />
-    <div class="book-info">
-      <h3 class="book-title">{{ book.title }}</h3>
-      <p class="book-author">{{ book.author }}</p>
-    </div>
-  </div>
-</main>
-
+    <main class="book-list">
+      <div
+        v-for="book in books"
+        :key="book.id"
+        class="book-card"
+        @click="goToReader(book.id)"
+      >
+        <img :src="book.cover" alt="封面" class="book-cover" />
+        <div class="book-info">
+          <h3 class="book-title">{{ book.title }}</h3>
+          <p class="book-author">{{ book.author }}</p>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -70,9 +73,12 @@ export default {
   methods: {
     async fetchBooks(keyword = "") {
       try {
-        const response = await axios.get("http://localhost:8080/api/book/list", {
-          params: { keyword },
-        });
+        const response = await axios.get(
+          "http://localhost:8080/api/book/list",
+          {
+            params: { keyword },
+          }
+        );
         this.books = response.data;
       } catch (error) {
         console.error("获取书籍失败:", error);
@@ -85,15 +91,26 @@ export default {
       this.menuVisible = !this.menuVisible;
     },
     goToShelf() {
+      this.menuVisible = false;
       this.$router.push("/bookshelf");
     },
+    goToUserCenter() {
+      this.menuVisible = false;
+      this.$router.push("/user-center");
+    },
+    goToAuthorCenter() {
+      this.menuVisible = false;
+      this.$router.push("/author-center");
+    },
     logout() {
+      this.menuVisible = false;
       localStorage.removeItem("token");
       this.$router.push("/login");
     },
     goToReader(bookId) {
-    this.$router.push(`/reader/${bookId}`);
-  }
+      this.menuVisible = false;
+      this.$router.push(`/reader/${bookId}`);
+    },
   },
   mounted() {
     this.fetchBooks();
@@ -158,6 +175,18 @@ export default {
   background-color: #f5f5f5;
 }
 
+.menu-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 5px 0;
+  padding: 0;
+  cursor: default;
+}
+
+.menu-divider:hover {
+  background-color: #eee;
+}
+
 /* 整个搜索区域 */
 .search-section {
   text-align: center;
@@ -209,7 +238,6 @@ export default {
 .search-btn:hover {
   background-color: #1669c1;
 }
-
 
 /* 书籍列表 */
 .book-list {
@@ -283,5 +311,4 @@ export default {
 .search-btn:hover {
   background-color: #1669c1;
 }
-
 </style>

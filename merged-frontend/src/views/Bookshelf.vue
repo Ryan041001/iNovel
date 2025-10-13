@@ -16,14 +16,27 @@
 
       <div class="nav-right">
         <el-button type="text" @click="goHome">首页</el-button>
+        <el-button type="text" @click="goToAuthorCenter">作者中心</el-button>
         <el-dropdown>
           <span class="el-dropdown-link">
-            <img class="avatar" src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDINho4O3zb7IlJpv-ubh9RS5dt4IrgwAC8RsAAmykCFfh2rkqr_C9ATYE.jpg" alt="头像" />
+            <img
+              class="avatar"
+              src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDINho4O3zb7IlJpv-ubh9RS5dt4IrgwAC8RsAAmykCFfh2rkqr_C9ATYE.jpg"
+              alt="头像"
+            />
           </span>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item @click="goToUserCenter"
+                >个人中心</el-dropdown-item
+              >
               <el-dropdown-item @click="fetchBooks">我的书架</el-dropdown-item>
-              <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
+              <el-dropdown-item @click="goToAuthorCenter"
+                >作者中心</el-dropdown-item
+              >
+              <el-dropdown-item divided @click="logout"
+                >退出登录</el-dropdown-item
+              >
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -32,27 +45,23 @@
 
     <!-- 书架展示区 -->
     <main class="shelf">
-      <div
-        v-for="book in books"
-        :key="book.id"
-        class="book-card"
-      >
+      <div v-for="book in books" :key="book.id" class="book-card">
         <div class="book-cover-container" @click="openBook(book)">
           <img
             class="book-cover"
             :src="book.cover || defaultCover"
             alt="封面"
           />
-          <el-button 
-            class="remove-btn" 
-            icon="Delete" 
-            circle 
+          <el-button
+            class="remove-btn"
+            icon="Delete"
+            circle
             size="mini"
             @click.stop="removeFromShelf(book.id)"
           ></el-button>
         </div>
         <p class="book-title">{{ book.title }}</p>
-        <p class="book-author">{{ book.author || '未知作者' }}</p>
+        <p class="book-author">{{ book.author || "未知作者" }}</p>
         <p class="book-type" v-if="book.fileType">
           {{ book.fileType.toUpperCase() }}
         </p>
@@ -86,7 +95,8 @@ import { useRouter } from "vue-router"; // 引入路由
 const router = useRouter(); // 初始化路由实例
 const keyword = ref("");
 const books = ref([]);
-const defaultCover = "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDIOJo4O9zDdgnvgoGG1E_MkcsvoT-5gAC_BsAAmykCFeauimPTBUAARA2BA.png";
+const defaultCover =
+  "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDIOJo4O9zDdgnvgoGG1E_MkcsvoT-5gAC_BsAAmykCFeauimPTBUAARA2BA.png";
 const fileInput = ref(null);
 
 // 从本地存储获取用户信息
@@ -103,23 +113,22 @@ const getUserId = () => {
   }
 };
 
-
 const userId = ref(getUserId());
 
 // 获取书架书籍
 const fetchBooks = async () => {
   // 检查登录状态
   if (!userId.value) {
-    ElMessage.warning('请先登录');
-    router.push('/login');
+    ElMessage.warning("请先登录");
+    router.push("/login");
     return;
   }
 
   try {
     const { data } = await axios.get("/api/bookshelf/list", {
-      params: { 
-        userId: userId.value, 
-        keyword: keyword.value 
+      params: {
+        userId: userId.value,
+        keyword: keyword.value,
       },
     });
     books.value = data || [];
@@ -127,9 +136,6 @@ const fetchBooks = async () => {
     ElMessage.error("获取书籍失败：" + (e.response?.data || e.message));
   }
 };
-
-
-
 
 onMounted(fetchBooks);
 
@@ -139,27 +145,27 @@ const openBook = async (book) => {
     // 直接跳转到阅读器，不做存在性检查
     router.push({
       path: `/reader/${book.id}`,
-      query: { title: book.title }
+      query: { title: book.title },
     });
   } catch (err) {
-    const errorData = err.response?.data 
-      ? JSON.stringify(err.response.data) 
+    const errorData = err.response?.data
+      ? JSON.stringify(err.response.data)
       : err.message;
-    ElMessage.error('打开书籍失败：' + errorData);
+    ElMessage.error("打开书籍失败：" + errorData);
   }
 };
 
 // 触发文件上传
 const triggerUpload = () => {
   if (!userId.value) {
-    ElMessage.warning('请先登录');
-    router.push('/login');
+    ElMessage.warning("请先登录");
+    router.push("/login");
     return;
   }
-  
+
   // 重置input值，解决连续上传同一文件不触发change事件的问题
   if (fileInput.value) {
-    fileInput.value.value = '';
+    fileInput.value.value = "";
   }
   fileInput.value?.click();
 };
@@ -168,11 +174,11 @@ const triggerUpload = () => {
 const handleFileUpload = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  
+
   // 验证文件类型
-  const ext = file.name.split('.').pop().toLowerCase();
-  if (!['txt', 'pdf', 'epub'].includes(ext)) {
-    ElMessage.error('仅支持 txt / epub / pdf 格式的文件');
+  const ext = file.name.split(".").pop().toLowerCase();
+  if (!["txt", "pdf", "epub"].includes(ext)) {
+    ElMessage.error("仅支持 txt / epub / pdf 格式的文件");
     return;
   }
 
@@ -181,13 +187,19 @@ const handleFileUpload = async (e) => {
   formData.append("userId", userId.value);
 
   try {
-    const { data } = await axios.post("/api/bookshelf/uploadAndParse", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: (progressEvent) => {
-        const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-        console.log(`上传进度: ${percent}%`);
+    const { data } = await axios.post(
+      "/api/bookshelf/uploadAndParse",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round(
+            (progressEvent.loaded / progressEvent.total) * 100
+          );
+          console.log(`上传进度: ${percent}%`);
+        },
       }
-    });
+    );
     ElMessage.success(data || "上传成功");
     fetchBooks(); // 重新获取书架列表
   } catch (err) {
@@ -200,10 +212,10 @@ const handleFileUpload = async (e) => {
 const removeFromShelf = async (bookId) => {
   try {
     const { data } = await axios.delete("/api/bookshelf/remove", {
-      params: { 
-        userId: userId.value, 
-        bookId 
-      }
+      params: {
+        userId: userId.value,
+        bookId,
+      },
     });
     ElMessage.success(data || "移除成功");
     fetchBooks(); // 重新获取书架列表
@@ -214,23 +226,33 @@ const removeFromShelf = async (bookId) => {
 
 // 跳转到首页 - 修复问题2
 const goHome = () => {
-  router.push('/'); // 使用路由跳转首页
+  router.push("/"); // 使用路由跳转首页
+};
+
+// 跳转到个人中心
+const goToUserCenter = () => {
+  router.push("/user-center");
+};
+
+// 跳转到作者中心
+const goToAuthorCenter = () => {
+  router.push("/author-center");
 };
 
 // 退出登录 - 修复问题3
 const logout = () => {
   // 1. 清除本地存储的用户信息
-  localStorage.removeItem('userInfo');
-  localStorage.removeItem('token');
-  
+  localStorage.removeItem("userInfo");
+  localStorage.removeItem("token");
+
   // 2. 重置用户ID
   userId.value = 0;
-  
+
   // 3. 显示成功消息
   ElMessage.success("退出成功");
-  
+
   // 4. 跳转到登录页
-  router.push('/login');
+  router.push("/login");
 };
 </script>
 

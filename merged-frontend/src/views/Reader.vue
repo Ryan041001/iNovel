@@ -5,7 +5,7 @@
       <div class="left">
         <button class="btn-link" @click="goBack">← 返回</button>
         <button class="btn-primary" @click="addToShelf" :disabled="addingShelf">
-          {{ inShelf ? '已加入书架' : (addingShelf ? '添加中...' : '加入书架') }}
+          {{ inShelf ? "已加入书架" : addingShelf ? "添加中..." : "加入书架" }}
         </button>
       </div>
 
@@ -16,10 +16,14 @@
       <div class="right">
         <a class="nav-link" @click.prevent="goHome">书城</a>
         <a class="nav-link" @click.prevent="goShelf">我的书架</a>
+        <a class="nav-link" @click.prevent="goAuthorCenter">作者中心</a>
         <div class="avatar-wrapper" @click="toggleAvatarMenu">
           <img class="avatar" :src="avatarUrl" alt="avatar" />
           <div v-if="avatarMenu" class="avatar-menu">
+            <div class="avatar-item" @click="goUserCenter">个人中心</div>
             <div class="avatar-item" @click="goShelf">我的书架</div>
+            <div class="avatar-item" @click="goAuthorCenter">作者中心</div>
+            <div class="avatar-divider"></div>
             <div class="avatar-item" @click="logout">退出登录</div>
           </div>
         </div>
@@ -47,7 +51,11 @@
       <section class="content" ref="contentWrap">
         <div v-if="loading" class="loader">加载中……</div>
 
-        <div v-else class="chapter-wrap" :style="{ fontSize: fontSize + 'px', lineHeight: lineHeight }">
+        <div
+          v-else
+          class="chapter-wrap"
+          :style="{ fontSize: fontSize + 'px', lineHeight: lineHeight }"
+        >
           <!-- 显示 HTML 内容（BookContent.chapterContent） -->
           <div
             v-if="currentChapter"
@@ -62,9 +70,23 @@
 
         <!-- 底部翻页栏 -->
         <div class="pager">
-          <button class="pager-btn" @click="prevChapter" :disabled="currentOrder <= 1">上一章</button>
-          <span class="pager-info">{{ currentOrder }} / {{ chapters.length }}</span>
-          <button class="pager-btn" @click="nextChapter" :disabled="currentOrder >= chapters.length">下一章</button>
+          <button
+            class="pager-btn"
+            @click="prevChapter"
+            :disabled="currentOrder <= 1"
+          >
+            上一章
+          </button>
+          <span class="pager-info"
+            >{{ currentOrder }} / {{ chapters.length }}</span
+          >
+          <button
+            class="pager-btn"
+            @click="nextChapter"
+            :disabled="currentOrder >= chapters.length"
+          >
+            下一章
+          </button>
         </div>
       </section>
 
@@ -72,11 +94,15 @@
       <aside class="annotation-drawer" v-show="showAnnotationPanel">
         <div class="drawer-header">
           批注
-          <button class="small" @click="refreshAnnotations" title="刷新">⟳</button>
+          <button class="small" @click="refreshAnnotations" title="刷新">
+            ⟳
+          </button>
         </div>
 
         <div class="ann-list">
-          <div v-if="annotationsForBook.length === 0" class="empty">暂无批注</div>
+          <div v-if="annotationsForBook.length === 0" class="empty">
+            暂无批注
+          </div>
           <div v-for="a in annotationsForBook" :key="a.id" class="ann-item">
             <div class="ann-meta">
               <div>
@@ -84,19 +110,28 @@
                 <small v-if="a.chapterOrder"> · 第{{ a.chapterOrder }}章</small>
               </div>
               <div class="ann-actions">
-                <button class="btn tiny" @click="jumpToAnnotation(a)">跳转</button>
-                <button class="btn tiny danger" @click="deleteAnnotation(a.id)">删除</button>
+                <button class="btn tiny" @click="jumpToAnnotation(a)">
+                  跳转
+                </button>
+                <button class="btn tiny danger" @click="deleteAnnotation(a.id)">
+                  删除
+                </button>
               </div>
             </div>
             <div class="ann-body">
-              <div v-if="a.textContent" class="ann-text">「{{ a.textContent }}」</div>
+              <div v-if="a.textContent" class="ann-text">
+                「{{ a.textContent }}」
+              </div>
               <div v-else class="ann-text muted">（书签）</div>
             </div>
           </div>
         </div>
 
         <div class="ann-actions">
-          <textarea v-model="noteText" placeholder="在此添加笔记（不选中文本也可以）"></textarea>
+          <textarea
+            v-model="noteText"
+            placeholder="在此添加笔记（不选中文本也可以）"
+          ></textarea>
           <div class="row">
             <input type="color" v-model="defaultColor" title="高亮颜色" />
             <button class="btn primary" @click="saveNote">保存笔记</button>
@@ -108,8 +143,12 @@
     <!-- 右侧悬浮工具（圆形） -->
     <nav class="float-toolbar">
       <button class="tool" title="目录" @click="toggleToc">☰</button>
-      <button class="tool" title="批注" @click="toggleAnnotationPanel">💬</button>
-      <button class="tool" title="夜间/日间" @click="toggleNight">{{ nightMode ? '🌤' : '🌙' }}</button>
+      <button class="tool" title="批注" @click="toggleAnnotationPanel">
+        💬
+      </button>
+      <button class="tool" title="夜间/日间" @click="toggleNight">
+        {{ nightMode ? "🌤" : "🌙" }}
+      </button>
       <button class="tool" title="添加书签" @click="addBookmark">🔖</button>
       <div class="tool tool-font">
         <button @click="decreaseFont">A-</button>
@@ -118,7 +157,12 @@
     </nav>
 
     <!-- 选中文字后的弹出框（高亮/批注） -->
-    <div v-if="showPopup" :style="popupStyle" class="selection-popup" ref="popup">
+    <div
+      v-if="showPopup"
+      :style="popupStyle"
+      class="selection-popup"
+      ref="popup"
+    >
       <div class="popup-row">
         <button class="btn small" @click="confirmHighlight">高亮</button>
         <button class="btn small" @click="confirmNote">批注</button>
@@ -133,20 +177,20 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'ReaderView',
+  name: "ReaderView",
   data() {
     return {
       // book & chapters
       bookId: null,
-      bookTitle: '',
+      bookTitle: "",
       chapters: [],
       currentChapter: null,
       currentOrder: 0,
-      chapterHtml: '',
-      originalChapterHtml: '',
+      chapterHtml: "",
+      originalChapterHtml: "",
 
       // UI state
       showToc: false,
@@ -156,119 +200,155 @@ export default {
       fontSize: 18,
       lineHeight: 1.9,
       avatarMenu: false,
-      avatarUrl: 'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDINho4O3zb7IlJpv-ubh9RS5dt4IrgwAC8RsAAmykCFfh2rkqr_C9ATYE.jpg',
+      avatarUrl:
+        "https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEDINho4O3zb7IlJpv-ubh9RS5dt4IrgwAC8RsAAmykCFfh2rkqr_C9ATYE.jpg",
       inShelf: false,
       addingShelf: false,
 
       // annotations
       annotationsForBook: [],
-      noteText: '',
-      defaultColor: '#ffd54f',
+      noteText: "",
+      defaultColor: "#ffd54f",
 
       // selection popup
       showPopup: false,
       popupX: 0,
       popupY: 0,
-      popupNote: '',
-      popupColor: '#ffd54f',
-      selectedText: '',
+      popupNote: "",
+      popupColor: "#ffd54f",
+      selectedText: "",
       selectedStart: null,
       selectedEnd: null,
       selectedRange: null,
 
       // local user
-      userId: null
+      userId: null,
     };
   },
 
   computed: {
     popupStyle() {
-      return { left: this.popupX + 'px', top: this.popupY + 'px', zIndex: 3000 };
-    }
+      return {
+        left: this.popupX + "px",
+        top: this.popupY + "px",
+        zIndex: 3000,
+      };
+    },
   },
 
   mounted() {
     this.bookId = Number(this.$route.params.id || this.$route.query.bookId);
-    this.userId = Number(localStorage.getItem('userId')) || (JSON.parse(localStorage.getItem('user') || '{}').id) || 1;
+    this.userId =
+      Number(localStorage.getItem("userId")) ||
+      JSON.parse(localStorage.getItem("user") || "{}").id ||
+      1;
     this.fetchBookInfo();
     this.fetchChapters();
     this.loadAnnotations();
-    const savedFont = Number(localStorage.getItem('reader_fontSize'));
+    const savedFont = Number(localStorage.getItem("reader_fontSize"));
     if (savedFont) this.fontSize = savedFont;
-    const savedNight = localStorage.getItem('reader_night') === '1';
+    const savedNight = localStorage.getItem("reader_night") === "1";
     this.nightMode = savedNight;
-    document.addEventListener('click', this.onGlobalClick);
+    document.addEventListener("click", this.onGlobalClick);
   },
 
   beforeUnmount() {
-    document.removeEventListener('click', this.onGlobalClick);
+    document.removeEventListener("click", this.onGlobalClick);
   },
 
   methods: {
     // navigation & top actions
-    goBack() { this.$router.back(); },
-    goHome() { this.$router.push('/'); },
-    goShelf() { this.$router.push('/bookshelf'); },
-    toggleAvatarMenu() { this.avatarMenu = !this.avatarMenu; },
-    logout() { localStorage.removeItem('token'); localStorage.removeItem('userId'); this.$router.push('/login'); },
-async addToShelf() {
-  const userId = this.userId;
-  if (!userId) { 
-    alert('请先登录'); 
-    this.$router.push('/login'); 
-    return; 
-  }
-  if (this.inShelf) {
-    alert('这本书已经在你的书架中了');
-    return;
-  }
+    goBack() {
+      this.$router.back();
+    },
+    goHome() {
+      this.$router.push("/");
+    },
+    goShelf() {
+      this.$router.push("/bookshelf");
+    },
+    goUserCenter() {
+      this.avatarMenu = false;
+      this.$router.push("/user-center");
+    },
+    goAuthorCenter() {
+      this.avatarMenu = false;
+      this.$router.push("/author-center");
+    },
+    toggleAvatarMenu() {
+      this.avatarMenu = !this.avatarMenu;
+    },
+    logout() {
+      this.avatarMenu = false;
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      this.$router.push("/login");
+    },
+    async addToShelf() {
+      const userId = this.userId;
+      if (!userId) {
+        alert("请先登录");
+        this.$router.push("/login");
+        return;
+      }
+      if (this.inShelf) {
+        alert("这本书已经在你的书架中了");
+        return;
+      }
 
-  try {
-    this.addingShelf = true;
-    await axios.post(`http://localhost:8080/api/bookshelf/add`, null, { 
-      params: { userId, bookId: this.bookId } 
-    });
-    this.inShelf = true;
-    alert('成功加入书架');
-  } catch (err) {
-    console.error('加入书架失败', err);
+      try {
+        this.addingShelf = true;
+        await axios.post(`http://localhost:8080/api/bookshelf/add`, null, {
+          params: { userId, bookId: this.bookId },
+        });
+        this.inShelf = true;
+        alert("成功加入书架");
+      } catch (err) {
+        console.error("加入书架失败", err);
 
-    // 判断后端返回
-    if (err.response && err.response.status === 409) {
-      alert('这本书已经在你的书架中了');
-      this.inShelf = true;
-    } else if (err.response && err.response.data && err.response.data.message) {
-      alert(err.response.data.message);
-    } else {
-      alert('加入书架失败，请稍后重试');
-    }
-  } finally {
-    this.addingShelf = false;
-  }
-},
-
+        // 判断后端返回
+        if (err.response && err.response.status === 409) {
+          alert("这本书已经在你的书架中了");
+          this.inShelf = true;
+        } else if (
+          err.response &&
+          err.response.data &&
+          err.response.data.message
+        ) {
+          alert(err.response.data.message);
+        } else {
+          alert("加入书架失败，请稍后重试");
+        }
+      } finally {
+        this.addingShelf = false;
+      }
+    },
 
     // load book & chapters
     async fetchBookInfo() {
       try {
-        const res = await axios.get(`http://localhost:8080/api/book/detail/${this.bookId}`);
-        this.bookTitle = res.data?.title || '';
+        const res = await axios.get(
+          `http://localhost:8080/api/book/detail/${this.bookId}`
+        );
+        this.bookTitle = res.data?.title || "";
       } catch (e) {
-        console.warn('获取书信息失败', e);
+        console.warn("获取书信息失败", e);
       }
     },
 
     async fetchChapters() {
       try {
         this.loading = true;
-        const res = await axios.get(`http://localhost:8080/api/book/content/${this.bookId}`);
+        const res = await axios.get(
+          `http://localhost:8080/api/book/content/${this.bookId}`
+        );
         this.chapters = res.data || [];
         if (this.chapters.length > 0) {
           const firstOrder = this.chapters[0].chapterOrder;
           this.loadChapter(firstOrder);
         }
       } catch (e) {
-        console.error('获取章节失败', e);
+        console.error("获取章节失败", e);
       } finally {
         this.loading = false;
       }
@@ -278,46 +358,72 @@ async addToShelf() {
       if (!order) return;
       try {
         this.loading = true;
-        const res = await axios.get(`http://localhost:8080/api/book/content/${this.bookId}/chapter/${order}`);
+        const res = await axios.get(
+          `http://localhost:8080/api/book/content/${this.bookId}/chapter/${order}`
+        );
         this.currentChapter = res.data;
         this.currentOrder = Number(order);
-        this.chapterHtml = res.data?.chapterContent || '<p>(本章无内容)</p>';
+        this.chapterHtml = res.data?.chapterContent || "<p>(本章无内容)</p>";
         this.originalChapterHtml = this.chapterHtml;
         this.$nextTick(() => {
           this.clearAllHighlights();
           this.renderHighlightsForCurrentChapter();
           if (this.$refs.contentWrap && this.$refs.contentWrap.scrollTo) {
-            this.$refs.contentWrap.scrollTo({ top: 0, behavior: 'auto' });
+            this.$refs.contentWrap.scrollTo({ top: 0, behavior: "auto" });
           }
         });
       } catch (e) {
-        console.error('加载章节失败', e);
+        console.error("加载章节失败", e);
       } finally {
         this.loading = false;
       }
     },
 
-    prevChapter() { if (this.currentOrder > 1) this.loadChapter(this.currentOrder - 1); },
-    nextChapter() { if (this.currentOrder < this.chapters.length) this.loadChapter(this.currentOrder + 1); },
-    toggleToc() { this.showToc = !this.showToc; },
-    toggleAnnotationPanel() { this.showAnnotationPanel = !this.showAnnotationPanel; },
+    prevChapter() {
+      if (this.currentOrder > 1) this.loadChapter(this.currentOrder - 1);
+    },
+    nextChapter() {
+      if (this.currentOrder < this.chapters.length)
+        this.loadChapter(this.currentOrder + 1);
+    },
+    toggleToc() {
+      this.showToc = !this.showToc;
+    },
+    toggleAnnotationPanel() {
+      this.showAnnotationPanel = !this.showAnnotationPanel;
+    },
 
     // font & theme
-    increaseFont() { this.fontSize = Math.min(30, this.fontSize + 1); localStorage.setItem('reader_fontSize', this.fontSize); },
-    decreaseFont() { this.fontSize = Math.max(12, this.fontSize - 1); localStorage.setItem('reader_fontSize', this.fontSize); },
-    toggleNight() { this.nightMode = !this.nightMode; localStorage.setItem('reader_night', this.nightMode ? '1' : '0'); },
+    increaseFont() {
+      this.fontSize = Math.min(30, this.fontSize + 1);
+      localStorage.setItem("reader_fontSize", this.fontSize);
+    },
+    decreaseFont() {
+      this.fontSize = Math.max(12, this.fontSize - 1);
+      localStorage.setItem("reader_fontSize", this.fontSize);
+    },
+    toggleNight() {
+      this.nightMode = !this.nightMode;
+      localStorage.setItem("reader_night", this.nightMode ? "1" : "0");
+    },
 
-    trimTitle(t) { if (!t) return ''; return t.length > 80 ? t.slice(0, 80) + '...' : t; },
+    trimTitle(t) {
+      if (!t) return "";
+      return t.length > 80 ? t.slice(0, 80) + "..." : t;
+    },
 
     // annotations backend
     async loadAnnotations() {
       try {
-        const res = await axios.get(`http://localhost:8080/api/annotations/book/${this.bookId}`, {
-          params: { userId: this.userId }
-        });
+        const res = await axios.get(
+          `http://localhost:8080/api/annotations/book/${this.bookId}`,
+          {
+            params: { userId: this.userId },
+          }
+        );
         this.annotationsForBook = res.data || [];
       } catch (e) {
-        console.error('加载批注失败', e);
+        console.error("加载批注失败", e);
       }
     },
     async refreshAnnotations() {
@@ -326,57 +432,65 @@ async addToShelf() {
       this.renderHighlightsForCurrentChapter();
     },
     async deleteAnnotation(id) {
-      if (!confirm('确认删除该批注？')) return;
+      if (!confirm("确认删除该批注？")) return;
       try {
         await axios.delete(`http://localhost:8080/api/annotations/${id}`);
-        this.annotationsForBook = this.annotationsForBook.filter(a => a.id !== id);
+        this.annotationsForBook = this.annotationsForBook.filter(
+          (a) => a.id !== id
+        );
         this.clearAllHighlights();
         this.renderHighlightsForCurrentChapter();
       } catch (e) {
-        console.error('删除失败', e);
-        alert('删除失败');
+        console.error("删除失败", e);
+        alert("删除失败");
       }
     },
 
     // save a simple NOTE from annotation panel (not selection)
     async saveNote() {
-      if (!this.noteText || !this.noteText.trim()) { alert('笔记不能为空'); return; }
+      if (!this.noteText || !this.noteText.trim()) {
+        alert("笔记不能为空");
+        return;
+      }
       const payload = {
         userId: this.userId,
         bookId: this.bookId,
         bookContentId: this.currentChapter?.id,
         chapterOrder: this.currentChapter?.chapterOrder,
-        type: 'NOTE',
-        textContent: this.noteText.trim()
+        type: "NOTE",
+        textContent: this.noteText.trim(),
       };
       try {
-        await axios.post('http://localhost:8080/api/annotations/add', payload);
-        this.noteText = '';
+        await axios.post("http://localhost:8080/api/annotations/add", payload);
+        this.noteText = "";
         await this.loadAnnotations();
-        alert('笔记已保存');
+        alert("笔记已保存");
       } catch (e) {
-        console.error('保存笔记失败', e);
-        alert('保存失败');
+        console.error("保存笔记失败", e);
+        alert("保存失败");
       }
     },
 
     // add a bookmark by creating annotation with type BOOKMARK
     async addBookmark() {
-      if (!this.currentChapter) { alert('请先打开章节'); return; }
+      if (!this.currentChapter) {
+        alert("请先打开章节");
+        return;
+      }
       const payload = {
         userId: this.userId,
         bookId: this.bookId,
         bookContentId: this.currentChapter.id,
         chapterOrder: this.currentChapter.chapterOrder,
-        type: 'BOOKMARK'
+        type: "BOOKMARK",
       };
       try {
-        await axios.post('http://localhost:8080/api/annotations/add', payload);
+        await axios.post("http://localhost:8080/api/annotations/add", payload);
         await this.loadAnnotations();
-        alert('书签已保存');
+        alert("书签已保存");
       } catch (e) {
-        console.error('保存书签失败', e);
-        alert('保存书签失败');
+        console.error("保存书签失败", e);
+        alert("保存书签失败");
       }
     },
 
@@ -426,15 +540,17 @@ async addToShelf() {
       this.selectedEnd = offsets.end;
       this.selectedRange = range.cloneRange();
 
-      this.popupNote = '';
-      this.popupColor = this.defaultColor || '#ffd54f';
+      this.popupNote = "";
+      this.popupColor = this.defaultColor || "#ffd54f";
       this.showPopup = true;
     },
 
     cancelSelection() {
       this.showPopup = false;
-      try { window.getSelection().removeAllRanges(); } catch (e) {}
-      this.selectedText = '';
+      try {
+        window.getSelection().removeAllRanges();
+      } catch (e) {}
+      this.selectedText = "";
       this.selectedStart = null;
       this.selectedEnd = null;
       this.selectedRange = null;
@@ -443,31 +559,40 @@ async addToShelf() {
     // immediate wrap using saved range -> instant feedback, then POST
     wrapRangeWithSpan(range, tempId, color) {
       try {
-        const span = document.createElement('span');
-        span.className = 'annotation-highlight';
+        const span = document.createElement("span");
+        span.className = "annotation-highlight";
         span.dataset.tempId = tempId;
-        span.style.backgroundColor = color || '#ffd54f';
-        span.style.padding = '0 2px';
-        span.style.borderRadius = '2px';
+        span.style.backgroundColor = color || "#ffd54f";
+        span.style.padding = "0 2px";
+        span.style.borderRadius = "2px";
         const frag = range.extractContents();
         span.appendChild(frag);
         range.insertNode(span);
         // collapse selection
-        try { window.getSelection().removeAllRanges(); } catch (e) {}
+        try {
+          window.getSelection().removeAllRanges();
+        } catch (e) {}
         return span;
       } catch (e) {
-        console.error('wrapRangeWithSpan error', e);
+        console.error("wrapRangeWithSpan error", e);
         return null;
       }
     },
 
     async confirmHighlight() {
-      if (!this.selectedText) { alert('请先选中文本'); return; }
+      if (!this.selectedText) {
+        alert("请先选中文本");
+        return;
+      }
       // make a temp id and immediately wrap selection to show highlight
-      const tempId = 'tmp-' + Date.now();
+      const tempId = "tmp-" + Date.now();
       let insertedSpan = null;
       if (this.selectedRange) {
-        insertedSpan = this.wrapRangeWithSpan(this.selectedRange, tempId, this.popupColor);
+        insertedSpan = this.wrapRangeWithSpan(
+          this.selectedRange,
+          tempId,
+          this.popupColor
+        );
       }
 
       // prepare payload (use saved offsets if present)
@@ -476,28 +601,39 @@ async addToShelf() {
         bookId: this.bookId,
         bookContentId: this.currentChapter?.id,
         chapterOrder: this.currentChapter?.chapterOrder,
-        type: 'HIGHLIGHT',
+        type: "HIGHLIGHT",
         textContent: this.selectedText,
         color: this.popupColor || this.defaultColor,
         startOffset: this.selectedStart,
-        endOffset: this.selectedEnd
+        endOffset: this.selectedEnd,
       };
 
       try {
-        const res = await axios.post('http://localhost:8080/api/annotations/add', payload);
-        const newId = res.data && (res.data.id || res.data && res.data.id);
+        const res = await axios.post(
+          "http://localhost:8080/api/annotations/add",
+          payload
+        );
+        const newId = res.data && (res.data.id || (res.data && res.data.id));
         // update temp span dataset to real id
         if (newId) {
           // find the temp span (either insertedSpan or query by data-temp-id)
           let span = insertedSpan;
           if (!span) {
-            span = this.$refs.contentEl?.querySelector(`[data-temp-id="${tempId}"]`);
+            span = this.$refs.contentEl?.querySelector(
+              `[data-temp-id="${tempId}"]`
+            );
           }
           if (!span) {
             // alternative search: find first span with innerText matching selectedText (best-effort)
-            const nodes = this.$refs.contentEl?.querySelectorAll('.annotation-highlight') || [];
+            const nodes =
+              this.$refs.contentEl?.querySelectorAll(".annotation-highlight") ||
+              [];
             for (const s of nodes) {
-              if (!s.dataset.annoId && s.innerText && s.innerText.trim() === this.selectedText.trim()) {
+              if (
+                !s.dataset.annoId &&
+                s.innerText &&
+                s.innerText.trim() === this.selectedText.trim()
+              ) {
                 span = s;
                 break;
               }
@@ -513,35 +649,43 @@ async addToShelf() {
         this.renderHighlightsForCurrentChapter();
         this.cancelSelection();
       } catch (e) {
-        console.error('保存高亮失败', e);
+        console.error("保存高亮失败", e);
         // rollback visual if we inserted a temp span
         if (insertedSpan && insertedSpan.parentNode) {
-          insertedSpan.parentNode.replaceChild(document.createTextNode(insertedSpan.innerText), insertedSpan);
+          insertedSpan.parentNode.replaceChild(
+            document.createTextNode(insertedSpan.innerText),
+            insertedSpan
+          );
         }
-        alert('保存高亮失败');
+        alert("保存高亮失败");
       }
     },
 
     async confirmNote() {
-      if (!this.popupNote || !this.popupNote.trim()) { alert('请输入批注内容'); return; }
+      if (!this.popupNote || !this.popupNote.trim()) {
+        alert("请输入批注内容");
+        return;
+      }
       const payload = {
         userId: this.userId,
         bookId: this.bookId,
         bookContentId: this.currentChapter?.id,
         chapterOrder: this.currentChapter?.chapterOrder,
-        type: 'NOTE',
-        textContent: (this.selectedText ? (this.selectedText + ' | ') : '') + this.popupNote.trim(),
+        type: "NOTE",
+        textContent:
+          (this.selectedText ? this.selectedText + " | " : "") +
+          this.popupNote.trim(),
         startOffset: this.selectedStart,
         endOffset: this.selectedEnd,
-        color: this.popupColor
+        color: this.popupColor,
       };
       try {
-        await axios.post('http://localhost:8080/api/annotations/add', payload);
+        await axios.post("http://localhost:8080/api/annotations/add", payload);
         await this.loadAnnotations();
         this.cancelSelection();
       } catch (e) {
-        console.error('保存批注失败', e);
-        alert('保存批注失败');
+        console.error("保存批注失败", e);
+        alert("保存批注失败");
       }
     },
 
@@ -554,12 +698,20 @@ async addToShelf() {
 
     renderHighlightsForCurrentChapter() {
       if (!this.$refs.contentEl || !this.currentChapter) return;
-      const arr = this.annotationsForBook.filter(a => a.bookContentId === this.currentChapter.id && a.type === 'HIGHLIGHT');
-      arr.forEach(a => {
+      const arr = this.annotationsForBook.filter(
+        (a) =>
+          a.bookContentId === this.currentChapter.id && a.type === "HIGHLIGHT"
+      );
+      arr.forEach((a) => {
         if (a.startOffset != null && a.endOffset != null) {
-          this.wrapOffsetsWithSpan(a.startOffset, a.endOffset, a.id, a.color || '#ffd54f');
+          this.wrapOffsetsWithSpan(
+            a.startOffset,
+            a.endOffset,
+            a.id,
+            a.color || "#ffd54f"
+          );
         } else if (a.textContent) {
-          this.highlightByText(a.textContent, a.id, a.color || '#ffd54f');
+          this.highlightByText(a.textContent, a.id, a.color || "#ffd54f");
         }
       });
     },
@@ -567,13 +719,19 @@ async addToShelf() {
     wrapOffsetsWithSpan(startChar, endChar, annotationId, color) {
       const root = this.$refs.contentEl;
       if (!root) return;
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
       const textNodes = [];
       let node;
       while ((node = walker.nextNode())) textNodes.push(node);
       let charCount = 0;
-      let startNode = null, startOffsetInNode = 0;
-      let endNode = null, endOffsetInNode = 0;
+      let startNode = null,
+        startOffsetInNode = 0;
+      let endNode = null,
+        endOffsetInNode = 0;
       for (let i = 0; i < textNodes.length; i++) {
         const tn = textNodes[i];
         const len = tn.nodeValue.length;
@@ -593,12 +751,12 @@ async addToShelf() {
       range.setStart(startNode, startOffsetInNode);
       range.setEnd(endNode, endOffsetInNode);
       const frag = range.extractContents();
-      const span = document.createElement('span');
-      span.className = 'annotation-highlight';
+      const span = document.createElement("span");
+      span.className = "annotation-highlight";
       span.dataset.annoId = annotationId;
-      span.style.backgroundColor = color || '#ffd54f';
-      span.style.padding = '0 2px';
-      span.style.borderRadius = '2px';
+      span.style.backgroundColor = color || "#ffd54f";
+      span.style.padding = "0 2px";
+      span.style.borderRadius = "2px";
       span.appendChild(frag);
       range.insertNode(span);
     },
@@ -607,10 +765,14 @@ async addToShelf() {
       if (!text) return;
       const root = this.$refs.contentEl;
       if (!root) return;
-      const plain = root.innerText || root.textContent || '';
+      const plain = root.innerText || root.textContent || "";
       const idx = plain.indexOf(text);
       if (idx < 0) return;
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
       let charCount = 0;
       let tn;
       while ((tn = walker.nextNode())) {
@@ -622,12 +784,12 @@ async addToShelf() {
           range.setStart(tn, startInNode);
           range.setEnd(tn, endInNode);
           const frag = range.extractContents();
-          const span = document.createElement('span');
-          span.className = 'annotation-highlight';
+          const span = document.createElement("span");
+          span.className = "annotation-highlight";
           span.dataset.annoId = annotationId;
           span.style.background = color;
-          span.style.padding = '0 2px';
-          span.style.borderRadius = '2px';
+          span.style.padding = "0 2px";
+          span.style.borderRadius = "2px";
           span.appendChild(frag);
           range.insertNode(span);
           break;
@@ -639,13 +801,18 @@ async addToShelf() {
     // offsets helper
     getOffsetsFromRange(range, rootEl) {
       try {
-        const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null);
+        const walker = document.createTreeWalker(
+          rootEl,
+          NodeFilter.SHOW_TEXT,
+          null
+        );
         const textNodes = [];
         let n;
         while ((n = walker.nextNode())) textNodes.push(n);
 
         let charCount = 0;
-        let foundStart = false, startIndex = -1;
+        let foundStart = false,
+          startIndex = -1;
         for (let i = 0; i < textNodes.length; i++) {
           const tn = textNodes[i];
           if (tn === range.startContainer) {
@@ -657,7 +824,8 @@ async addToShelf() {
         }
 
         charCount = 0;
-        let foundEnd = false, endIndex = -1;
+        let foundEnd = false,
+          endIndex = -1;
         for (let i = 0; i < textNodes.length; i++) {
           const tn = textNodes[i];
           if (tn === range.endContainer) {
@@ -670,7 +838,7 @@ async addToShelf() {
 
         if (!foundStart || !foundEnd) {
           const selText = range.toString();
-          const plain = rootEl.innerText || rootEl.textContent || '';
+          const plain = rootEl.innerText || rootEl.textContent || "";
           const idx = plain.indexOf(selText);
           if (idx < 0) return null;
           return { start: idx, end: idx + selText.length, text: selText };
@@ -678,7 +846,7 @@ async addToShelf() {
         const text = range.toString();
         return { start: startIndex, end: endIndex, text };
       } catch (e) {
-        console.error('计算选区offset失败', e);
+        console.error("计算选区offset失败", e);
         return null;
       }
     },
@@ -687,28 +855,36 @@ async addToShelf() {
     jumpToAnnotation(a) {
       if (!a) return;
       if (a.bookContentId && a.bookContentId !== this.currentChapter?.id) {
-        this.loadChapter(a.chapterOrder || this.getChapterOrderById(a.bookContentId));
+        this.loadChapter(
+          a.chapterOrder || this.getChapterOrderById(a.bookContentId)
+        );
         this.$nextTick(() => {
           setTimeout(() => {
-            const el = this.$refs.contentEl?.querySelector(`[data-anno-id="${a.id}"]`);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const el = this.$refs.contentEl?.querySelector(
+              `[data-anno-id="${a.id}"]`
+            );
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
           }, 400);
         });
       } else {
         this.$nextTick(() => {
-          const el = this.$refs.contentEl?.querySelector(`[data-anno-id="${a.id}"]`);
+          const el = this.$refs.contentEl?.querySelector(
+            `[data-anno-id="${a.id}"]`
+          );
           if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.style.transition = 'box-shadow 0.4s';
-            el.style.boxShadow = '0 0 8px rgba(255,200,0,0.9)';
-            setTimeout(() => { el.style.boxShadow = ''; }, 700);
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            el.style.transition = "box-shadow 0.4s";
+            el.style.boxShadow = "0 0 8px rgba(255,200,0,0.9)";
+            setTimeout(() => {
+              el.style.boxShadow = "";
+            }, 700);
           }
         });
       }
     },
 
     getChapterOrderById(bookContentId) {
-      const c = this.chapters.find(x => x.id === bookContentId);
+      const c = this.chapters.find((x) => x.id === bookContentId);
       return c ? c.chapterOrder : null;
     },
 
@@ -718,108 +894,415 @@ async addToShelf() {
         this.avatarMenu = false;
         this.showPopup = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
 /* 略：保持之前样式，仅对关键样式作增强（popup z-index，提高 highlight 可视度） */
-.reader-page { min-height: 100vh; background: #f7f7f7; color: #1b1b1b; font-family: "Helvetica Neue", Arial, "Microsoft Yahei", sans-serif; display:flex; flex-direction:column; }
-.reader-page.night { background: #0d1115; color: #dfe6ee; }
+.reader-page {
+  min-height: 100vh;
+  background: #f7f7f7;
+  color: #1b1b1b;
+  font-family: "Helvetica Neue", Arial, "Microsoft Yahei", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.reader-page.night {
+  background: #0d1115;
+  color: #dfe6ee;
+}
 /* ...（其余样式与之前版本保持一致） ... */
 
 /* selection popup 提高 z-index，避免被 toolbar 覆盖 */
-.selection-popup { position:absolute; z-index:3000; width:260px; background:#fff; border:1px solid #ddd; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:8px; border-radius:8px; }
+.selection-popup {
+  position: absolute;
+  z-index: 3000;
+  width: 260px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  border-radius: 8px;
+}
 /* highlight style 更加明显 */
-.annotation-highlight { background:#ffd54f; padding:0 2px; border-radius:2px; box-decoration-break: clone; }
+.annotation-highlight {
+  background: #ffd54f;
+  padding: 0 2px;
+  border-radius: 2px;
+  box-decoration-break: clone;
+}
 
 /* 其余 CSS 保持你之前的样式（省略以保持回复简洁） */
 /* ---------------- layout ---------------- */
-.reader-page { min-height: 100vh; background: #f7f7f7; color: #1b1b1b; font-family: "Helvetica Neue", Arial, "Microsoft Yahei", sans-serif; display:flex; flex-direction:column; }
-.reader-page.night { background: #0d1115; color: #dfe6ee; }
-
-/* top */
-.reader-top { height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background: #fff; border-bottom:1px solid #e6e6e6; }
-.reader-page.night .reader-top { background: #07111a; border-bottom-color:#16202a; }
-.left, .center, .right { display:flex; align-items:center; gap:8px; }
-.left { flex:1; }
-.center { flex:1; justify-content:center; }
-.right { flex:1; justify-content:flex-end; position:relative; }
-.book-title { font-weight:600; font-size:16px; }
-
-/* buttons */
-.btn-link { border:none; background:none; color:#1a73e8; cursor:pointer; }
-.btn-primary { background:#1a73e8; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
-
-/* tools */
-.reader-tools { display:flex; justify-content:space-between; align-items:center; padding:8px 18px; background:#fafafa; border-bottom:1px solid #eee; }
-.reader-page.night .reader-tools { background:#07111a; border-bottom-color:#16202a; }
-.tool { background:none; border:none; cursor:pointer; padding:6px; color:inherit; }
-.font-controls { display:inline-flex; align-items:center; gap:8px; }
-
-/* body layout */
-.reader-body { display:flex; flex:1; min-height:calc(100vh - 140px); position:relative; }
-.toc { width:300px; border-right:1px solid #eee; padding:12px; background:#fff; overflow:auto; }
-.reader-page.night .toc { background:#07111a; border-right-color:#12202a; }
-.toc-header { font-weight:600; margin-bottom:8px; }
-.toc-list { display:flex; flex-direction:column; gap:6px; }
-.toc-item { padding:8px; border-radius:6px; cursor:pointer; color:#222; display:flex; gap:8px; align-items:center; }
-.reader-page.night .toc-item { color:#cfd8de; }
-.toc-item.active { background:#f1f7ff; }
-.reader-page.night .toc-item.active { background:#0b2332; }
-
-/* content */
-.content { flex:1; overflow:auto; padding:28px 60px; }
-.chapter-wrap { max-width:840px; margin:0 auto; text-align:left; }
-.chapter-body { background:#fff; padding:32px; box-shadow:0 6px 18px rgba(0,0,0,0.04); border-radius:8px; }
-.reader-page.night .chapter-body { background:#071521; box-shadow:none; color:#dfe6ee; }
-.chapter-body img { max-width:100%; height:auto; display:block; margin:12px auto; }
-
-/* pager */
-.pager { display:flex; justify-content:center; align-items:center; gap:12px; margin:18px 0; }
-.pager-btn { padding:8px 14px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-.reader-page.night .pager-btn { background:#0b1116; border-color:#222; color:#ddd; }
-
-/* annotation drawer */
-.annotation-drawer { width:360px; border-left:1px solid #eee; background:#fff; padding:12px; overflow:auto; }
-.reader-page.night .annotation-drawer { background:#07111a; border-left-color:#12202a; color:#cfd8de; }
-.drawer-header { display:flex; justify-content:space-between; align-items:center; font-weight:600; margin-bottom:8px; }
-.ann-list { max-height:60vh; overflow:auto; margin-bottom:10px; }
-.ann-item { padding:8px; border-bottom:1px dashed #eee; }
-.ann-meta { display:flex; justify-content:space-between; align-items:center; gap:8px; }
-.ann-text { margin-top:6px; }
-
-/* float toolbar */
-.float-toolbar { position:fixed; right:22px; top:160px; display:flex; flex-direction:column; gap:12px; z-index:50; }
-.tool { width:44px; height:44px; border-radius:50%; background:#fff; box-shadow:0 6px 14px rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; font-size:16px; border:none; cursor:pointer; }
-.tool-font { padding:8px; display:flex; flex-direction:column; gap:6px; }
-
-/* selection popup */
-.selection-popup { position:absolute; z-index:999; width:260px; background:#fff; border:1px solid #ddd; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding:8px; border-radius:8px; }
-.selection-popup textarea { width:100%; height:60px; margin-top:8px; border:1px solid #eee; padding:6px; border-radius:4px; resize:vertical; }
-.selection-popup .row { display:flex; align-items:center; gap:8px; margin-top:8px; }
-.btn.small { padding:6px 10px; border-radius:6px; }
-.btn.tiny { padding:4px 8px; font-size:12px; }
-.btn.danger { background:#ff6b6b; color:#fff; border:none; }
-.btn.primary { background:#2f80ed; color:#fff; border:none; padding:8px 12px; border-radius:6px; }
-
-/* highlight style */
-.annotation-highlight { background:#ffd54f; padding:0 2px; border-radius:2px; }
-
-/* avatar */
-.avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; cursor:pointer; }
-.avatar-wrapper { position:relative; }
-.avatar-menu { position:absolute; right:0; top:44px; background:#fff; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.08); width:160px; z-index:30; }
-.avatar-item { padding:10px; cursor:pointer; text-align:center; }
-.avatar-item:hover { background:#f5f7fb; }
-.reader-page.night .avatar-menu { background:#07111a; color:#cfd8de; }
-
-@media (max-width: 1000px) {
-  .toc { display:none; }
-  .annotation-drawer { display:none; }
-  .chapter-body { padding:18px; }
-  .float-toolbar { right:8px; top:140px; }
+.reader-page {
+  min-height: 100vh;
+  background: #f7f7f7;
+  color: #1b1b1b;
+  font-family: "Helvetica Neue", Arial, "Microsoft Yahei", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.reader-page.night {
+  background: #0d1115;
+  color: #dfe6ee;
 }
 
+/* top */
+.reader-top {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: #fff;
+  border-bottom: 1px solid #e6e6e6;
+}
+.reader-page.night .reader-top {
+  background: #07111a;
+  border-bottom-color: #16202a;
+}
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.left {
+  flex: 1;
+}
+.center {
+  flex: 1;
+  justify-content: center;
+}
+.right {
+  flex: 1;
+  justify-content: flex-end;
+  position: relative;
+}
+.book-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* buttons */
+.btn-link {
+  border: none;
+  background: none;
+  color: #1a73e8;
+  cursor: pointer;
+}
+.btn-primary {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* tools */
+.reader-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 18px;
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+}
+.reader-page.night .reader-tools {
+  background: #07111a;
+  border-bottom-color: #16202a;
+}
+.tool {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: inherit;
+}
+.font-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* body layout */
+.reader-body {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 140px);
+  position: relative;
+}
+.toc {
+  width: 300px;
+  border-right: 1px solid #eee;
+  padding: 12px;
+  background: #fff;
+  overflow: auto;
+}
+.reader-page.night .toc {
+  background: #07111a;
+  border-right-color: #12202a;
+}
+.toc-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.toc-item {
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #222;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.reader-page.night .toc-item {
+  color: #cfd8de;
+}
+.toc-item.active {
+  background: #f1f7ff;
+}
+.reader-page.night .toc-item.active {
+  background: #0b2332;
+}
+
+/* content */
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 28px 60px;
+}
+.chapter-wrap {
+  max-width: 840px;
+  margin: 0 auto;
+  text-align: left;
+}
+.chapter-body {
+  background: #fff;
+  padding: 32px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+}
+.reader-page.night .chapter-body {
+  background: #071521;
+  box-shadow: none;
+  color: #dfe6ee;
+}
+.chapter-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 12px auto;
+}
+
+/* pager */
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+}
+.pager-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+}
+.reader-page.night .pager-btn {
+  background: #0b1116;
+  border-color: #222;
+  color: #ddd;
+}
+
+/* annotation drawer */
+.annotation-drawer {
+  width: 360px;
+  border-left: 1px solid #eee;
+  background: #fff;
+  padding: 12px;
+  overflow: auto;
+}
+.reader-page.night .annotation-drawer {
+  background: #07111a;
+  border-left-color: #12202a;
+  color: #cfd8de;
+}
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.ann-list {
+  max-height: 60vh;
+  overflow: auto;
+  margin-bottom: 10px;
+}
+.ann-item {
+  padding: 8px;
+  border-bottom: 1px dashed #eee;
+}
+.ann-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.ann-text {
+  margin-top: 6px;
+}
+
+/* float toolbar */
+.float-toolbar {
+  position: fixed;
+  right: 22px;
+  top: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 50;
+}
+.tool {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+.tool-font {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* selection popup */
+.selection-popup {
+  position: absolute;
+  z-index: 999;
+  width: 260px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  border-radius: 8px;
+}
+.selection-popup textarea {
+  width: 100%;
+  height: 60px;
+  margin-top: 8px;
+  border: 1px solid #eee;
+  padding: 6px;
+  border-radius: 4px;
+  resize: vertical;
+}
+.selection-popup .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.btn.small {
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.btn.tiny {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.btn.danger {
+  background: #ff6b6b;
+  color: #fff;
+  border: none;
+}
+.btn.primary {
+  background: #2f80ed;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* highlight style */
+.annotation-highlight {
+  background: #ffd54f;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* avatar */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+.avatar-wrapper {
+  position: relative;
+}
+.avatar-menu {
+  position: absolute;
+  right: 0;
+  top: 44px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  width: 160px;
+  z-index: 30;
+}
+.avatar-item {
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+.avatar-item:hover {
+  background: #f5f7fb;
+}
+.avatar-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 5px 0;
+}
+.reader-page.night .avatar-menu {
+  background: #07111a;
+  color: #cfd8de;
+}
+.reader-page.night .avatar-divider {
+  background-color: #222;
+}
+
+@media (max-width: 1000px) {
+  .toc {
+    display: none;
+  }
+  .annotation-drawer {
+    display: none;
+  }
+  .chapter-body {
+    padding: 18px;
+  }
+  .float-toolbar {
+    right: 8px;
+    top: 140px;
+  }
+}
 </style>

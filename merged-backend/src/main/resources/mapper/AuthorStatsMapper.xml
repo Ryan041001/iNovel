@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.inovel.mapper.AuthorStatsMapper">
+
+    <resultMap id="AuthorStatsResultMap" type="com.inovel.entity.AuthorStats">
+        <result property="authorId" column="author_id"/>
+        <result property="totalWorks" column="total_works"/>
+        <result property="totalWords" column="total_words"/>
+        <result property="totalViews" column="total_views"/>
+        <result property="totalLikes" column="total_likes"/>
+        <result property="totalCollects" column="total_collects"/>
+        <result property="totalFans" column="total_fans"/>
+    </resultMap>
+
+    <select id="getAuthorStats" resultMap="AuthorStatsResultMap">
+        SELECT 
+            #{authorId} as author_id,
+            COUNT(DISTINCT w.id) as total_works,
+            COALESCE(SUM(w.word_count), 0) as total_words,
+            COALESCE(SUM(w.view_count), 0) as total_views,
+            COALESCE(SUM(w.like_count), 0) as total_likes,
+            COALESCE(SUM(w.collect_count), 0) as total_collects,
+            0 as total_fans
+        FROM works w
+        WHERE w.author_id = #{authorId}
+    </select>
+
+    <select id="getTodayViews" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(w.view_count), 0)
+        FROM works w
+        WHERE w.author_id = #{authorId}
+          AND DATE(w.update_time) = CURDATE()
+    </select>
+
+    <select id="getWeekViews" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(w.view_count), 0)
+        FROM works w
+        WHERE w.author_id = #{authorId}
+          AND YEARWEEK(w.update_time) = YEARWEEK(NOW())
+    </select>
+
+    <select id="getMonthViews" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(w.view_count), 0)
+        FROM works w
+        WHERE w.author_id = #{authorId}
+          AND YEAR(w.update_time) = YEAR(NOW())
+          AND MONTH(w.update_time) = MONTH(NOW())
+    </select>
+
+</mapper>

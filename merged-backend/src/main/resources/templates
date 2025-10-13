@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作者中心 - 书海阁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+    * {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :root {
+      --color-primary: #1e40af;
+      --color-primary-light: #3b82f6;
+      --color-accent: #10b981;
+      --color-bg-dark: #0f172a;
+      --color-bg-darker: #020617;
+      --color-bg-card: #1e293b;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+    }
+
+    body {
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .book-cover {
+      aspect-ratio: 3/4;
+      object-fit: cover;
+    }
+
+    .tab-button {
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--color-primary-light);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .chart-bar {
+      transition: all 0.3s ease;
+    }
+
+    .chart-bar:hover {
+      opacity: 0.8;
+    }
+
+    /* 标签页内容默认隐藏 */
+    .tab-content {
+      display: none;
+    }
+
+    /* 激活的标签页内容显示 */
+    .tab-content.active {
+      display: block;
+    }
+
+    /* 弹窗默认隐藏 */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    /* 弹窗激活状态 */
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--color-bg-card);
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 56rem;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* 通知徽章 */
+    .notification-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 快捷操作面板 */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .quick-action-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .quick-action-card:hover {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(59, 130, 246, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* 搜索框样式 */
+    .search-input {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      color: white;
+      width: 100%;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: rgba(59, 130, 246, 0.8);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    /* 下拉菜单 */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background: var(--color-bg-card);
+      min-width: 200px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      border-radius: 0.5rem;
+      z-index: 1;
+      border: 1px solid rgba(71, 85, 105, 0.5);
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.2s;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    /* 进度条 */
+    .progress-bar {
+      height: 6px;
+      background: rgba(71, 85, 105, 0.3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-card {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="min-h-screen">
+  <!-- 顶部导航 -->
+  <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-8">
+          <a href="/index" class="flex items-center gap-2">
+            <i data-lucide="book-open" class="w-8 h-8 text-blue-500"></i>
+            <span class="text-2xl font-bold gradient-text">书海阁</span>
+          </a>
+
+          <div class="hidden md:flex items-center gap-6">
+            <a href="/index" class="nav-link text-slate-300 hover:text-white text-sm font-medium">首页</a>
+            <a href="/category" class="nav-link text-slate-300 hover:text-white text-sm font-medium">分类</a>
+            <a href="/author-center" class="text-white text-sm font-medium">作者中心</a>
+            <a href="/user-center" class="text-slate-300 hover:text-white text-sm font-medium">个人中心</a>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- 通知按钮 -->
+          <div class="relative">
+            <button id="notificationBtn" class="p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+              <i data-lucide="bell" class="w-5 h-5"></i>
+              <div class="notification-badge">3</div>
+            </button>
+          </div>
+
+          <button id="showNewChapterBtn" class="hidden sm:flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>发布章节</span>
+          </button>
+
+          <div class="dropdown">
+            <div class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-800">
+              <img src="https://www.keaitupian.cn/cjpic/frombd/2/253/3570277888/3393481227.jpg?height=100&width=100" alt="笔名作者" class="w-8 h-8 rounded-full" />
+              <span class="hidden sm:inline text-sm">笔名作者</span>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+            </div>
+
+            <div class="dropdown-content">
+              <a href="#" class="dropdown-item">
+                <i data-lucide="user" class="w-4 h-4"></i>
+                <span>个人资料</span>
+              </a>
+              <a href="#" class="dropdown-item">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                <span>账户设置</span>
+              </a>
+              <a href="#" class="dropdown-item">
+                <i data-lucide="help-circle" class="w-4 h-4"></i>
+                <span>帮助中心</span>
+              </a>
+              <div class="border-t border-slate-700 my-1"></div>
+              <a href="#" class="dropdown-item">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>退出登录</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要内容 -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 快捷操作面板 -->
+    <div class="bg-slate-800 rounded-2xl p-6 mb-8">
+      <h3 class="text-lg font-bold mb-4">快捷操作</h3>
+      <div class="quick-actions">
+        <div class="quick-action-card" onclick="showModal('newChapterModal')">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-green-600 rounded-lg">
+              <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <h4 class="font-medium">发布章节</h4>
+              <p class="text-sm text-slate-400">快速发布新章节</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-action-card" onclick="showModal('newBookModal')">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-600 rounded-lg">
+              <i data-lucide="book-open" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <h4 class="font-medium">创建作品</h4>
+              <p class="text-sm text-slate-400">开始新的创作</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-action-card" onclick="switchTab('income')">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-yellow-600 rounded-lg">
+              <i data-lucide="dollar-sign" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <h4 class="font-medium">收入统计</h4>
+              <p class="text-sm text-slate-400">查看收入详情</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-action-card" onclick="switchTab('comments')">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-purple-600 rounded-lg">
+              <i data-lucide="message-square" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <h4 class="font-medium">读者互动</h4>
+              <p class="text-sm text-slate-400">回复读者评论</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 作者信息卡片 -->
+    <div class="bg-slate-800 rounded-2xl p-8 mb-8">
+      <div class="flex flex-col md:flex-row items-center gap-8">
+        <div class="flex flex-col items-center">
+          <img src="https://www.keaitupian.cn/cjpic/frombd/2/253/3570277888/3393481227.jpg?height=100&width=100" alt="笔名作者" class="w-24 h-24 rounded-full mb-4" />
+          <h2 class="text-2xl font-bold mb-1">笔名作者</h2>
+          <span class="bg-gradient-to-r from-yellow-500 to-orange-500 px-3 py-1 rounded-full text-sm font-medium">
+              签约作者
+            </span>
+        </div>
+
+        <div class="flex-1 w-full">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-blue-500 mb-1">3</div>
+              <div class="text-sm text-slate-400">作品数</div>
+            </div>
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-green-500 mb-1">520万字</div>
+              <div class="text-sm text-slate-400">总字数</div>
+            </div>
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-purple-500 mb-1">125万</div>
+              <div class="text-sm text-slate-400">读者数</div>
+            </div>
+            <div class="stat-card rounded-lg p-4 text-center">
+              <div class="text-2xl font-bold text-yellow-500 mb-1">¥12,580</div>
+              <div class="text-sm text-slate-400">本月收入</div>
+            </div>
+          </div>
+
+          <!-- 写作进度 -->
+          <div class="mt-6">
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-slate-400">本月写作进度</span>
+              <span class="text-slate-300">8.2万字 / 10万字</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 82%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 标签页 -->
+    <div class="bg-slate-800 rounded-2xl overflow-hidden">
+      <!-- 标签头 -->
+      <div class="flex border-b border-slate-700 overflow-x-auto">
+        <button class="tab-button active px-6 py-4 font-medium whitespace-nowrap transition-colors text-blue-400" data-tab="overview">
+          数据概览
+        </button>
+        <button class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors text-slate-400 hover:text-white" data-tab="books">
+          作品管理
+        </button>
+        <button class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors text-slate-400 hover:text-white" data-tab="chapters">
+          章节管理
+        </button>
+        <button class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors text-slate-400 hover:text-white" data-tab="income">
+          收入统计
+        </button>
+        <button class="tab-button px-6 py-4 font-medium whitespace-nowrap transition-colors text-slate-400 hover:text-white" data-tab="comments">
+          读者互动
+        </button>
+      </div>
+
+      <!-- 数据概览 -->
+      <div class="tab-content active p-6" id="overview">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <!-- 今日数据 -->
+          <div class="bg-slate-700 rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">今日数据</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">总阅读量</span>
+                <span class="text-2xl font-bold text-blue-400">23,380</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">新增收藏</span>
+                <span class="text-2xl font-bold text-green-400">+156</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">新增评论</span>
+                <span class="text-2xl font-bold text-purple-400">+89</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">今日收入</span>
+                <span class="text-2xl font-bold text-yellow-400">¥2,580</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 最近更新 -->
+          <div class="bg-slate-700 rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">最近更新</h3>
+            <div class="space-y-3">
+              <!-- 最近章节1 -->
+              <div class="flex items-start gap-3 p-3 bg-slate-800 rounded-lg">
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium mb-1 truncate">星辰之路</h4>
+                  <p class="text-sm text-slate-400 mb-1 truncate">第856章 星海征途</p>
+                  <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span>2024-01-20 14:30</span>
+                    <span>阅读 12580</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 最近章节2 -->
+              <div class="flex items-start gap-3 p-3 bg-slate-800 rounded-lg">
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium mb-1 truncate">修仙传说</h4>
+                  <p class="text-sm text-slate-400 mb-1 truncate">第620章 天劫降临</p>
+                  <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span>2024-01-19 20:15</span>
+                    <span>阅读 8650</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 最近章节3 -->
+              <div class="flex items-start gap-3 p-3 bg-slate-800 rounded-lg">
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium mb-1 truncate">星辰之路</h4>
+                  <p class="text-sm text-slate-400 mb-1 truncate">第855章 突破瓶颈</p>
+                  <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span>2024-01-19 14:30</span>
+                    <span>阅读 11200</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 数据图表 -->
+        <div class="mt-6 grid md:grid-cols-2 gap-6">
+          <div class="bg-slate-700 rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">阅读趋势</h3>
+            <div class="h-64">
+              <canvas id="readingTrendChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-slate-700 rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">作品数据分布</h3>
+            <div class="h-64">
+              <canvas id="bookDataChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 作品管理 -->
+      <div class="tab-content p-6" id="books">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+          <h3 class="text-xl font-bold">我的作品</h3>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <input type="text" id="bookSearch" class="search-input" placeholder="搜索作品..." oninput="searchBooks()">
+            <button id="showNewBookBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap justify-center">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>创建新作品</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-4" id="bookList">
+          <!-- 作品1 -->
+          <div class="bg-slate-700 rounded-xl p-6 book-item">
+            <div class="flex flex-col md:flex-row gap-6">
+              <img src="/templates/images/default.webp?height=300&width=225" alt="星辰之路" class="w-32 h-40 object-cover rounded-lg" />
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 class="text-xl font-bold mb-2">星辰之路</h4>
+                    <div class="flex items-center gap-3 text-sm text-slate-400">
+                      <span class="bg-blue-600 px-2 py-1 rounded text-white">连载中</span>
+                      <span>科幻</span>
+                      <span>856章</span>
+                      <span>280万字</span>
+                    </div>
+                  </div>
+                  <div class="dropdown">
+                    <button class="text-slate-400 hover:text-white">
+                      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                    </button>
+                    <div class="dropdown-content">
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                        <span>编辑作品</span>
+                      </a>
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span>数据详情</span>
+                      </a>
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>复制链接</span>
+                      </a>
+                      <div class="border-t border-slate-700 my-1"></div>
+                      <a href="#" class="dropdown-item text-red-400">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>删除作品</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">今日阅读</div>
+                    <div class="text-lg font-bold">12580</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">总阅读</div>
+                    <div class="text-lg font-bold">5800万</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">收藏数</div>
+                    <div class="text-lg font-bold">28万</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">本月收入</div>
+                    <div class="text-lg font-bold text-yellow-400">¥8,500</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors" onclick="showModal('newChapterModal')">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>发布章节</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                    <span>编辑作品</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>数据详情</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 作品2 -->
+          <div class="bg-slate-700 rounded-xl p-6 book-item">
+            <div class="flex flex-col md:flex-row gap-6">
+              <img src="/templates/images/default.webp?height=300&width=225" alt="修仙传说" class="w-32 h-40 object-cover rounded-lg" />
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 class="text-xl font-bold mb-2">修仙传说</h4>
+                    <div class="flex items-center gap-3 text-sm text-slate-400">
+                      <span class="bg-blue-600 px-2 py-1 rounded text-white">连载中</span>
+                      <span>玄幻</span>
+                      <span>620章</span>
+                      <span>180万字</span>
+                    </div>
+                  </div>
+                  <div class="dropdown">
+                    <button class="text-slate-400 hover:text-white">
+                      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                    </button>
+                    <div class="dropdown-content">
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                        <span>编辑作品</span>
+                      </a>
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span>数据详情</span>
+                      </a>
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>复制链接</span>
+                      </a>
+                      <div class="border-t border-slate-700 my-1"></div>
+                      <a href="#" class="dropdown-item text-red-400">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>删除作品</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">今日阅读</div>
+                    <div class="text-lg font-bold">8650</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">总阅读</div>
+                    <div class="text-lg font-bold">3200万</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">收藏数</div>
+                    <div class="text-lg font-bold">15万</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">本月收入</div>
+                    <div class="text-lg font-bold text-yellow-400">¥3,200</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors" onclick="showModal('newChapterModal')">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>发布章节</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                    <span>编辑作品</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>数据详情</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 作品3 -->
+          <div class="bg-slate-700 rounded-xl p-6 book-item">
+            <div class="flex flex-col md:flex-row gap-6">
+              <img src="/templates/images/default.webp?height=300&width=225" alt="都市异能" class="w-32 h-40 object-cover rounded-lg" />
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 class="text-xl font-bold mb-2">都市异能</h4>
+                    <div class="flex items-center gap-3 text-sm text-slate-400">
+                      <span class="bg-gray-600 px-2 py-1 rounded text-white">已完结</span>
+                      <span>都市</span>
+                      <span>310章</span>
+                      <span>60万字</span>
+                    </div>
+                  </div>
+                  <div class="dropdown">
+                    <button class="text-slate-400 hover:text-white">
+                      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                    </button>
+                    <div class="dropdown-content">
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                        <span>编辑作品</span>
+                      </a>
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span>数据详情</span>
+                      </a>
+                      <a href="#" class="dropdown-item">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>复制链接</span>
+                      </a>
+                      <div class="border-t border-slate-700 my-1"></div>
+                      <a href="#" class="dropdown-item text-red-400">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>删除作品</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">今日阅读</div>
+                    <div class="text-lg font-bold">2150</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">总阅读</div>
+                    <div class="text-lg font-bold">1500万</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">收藏数</div>
+                    <div class="text-lg font-bold">8万</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-slate-400 mb-1">本月收入</div>
+                    <div class="text-lg font-bold text-yellow-400">¥880</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button class="flex items-center gap-2 bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors cursor-not-allowed">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span>已完结</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                    <span>编辑作品</span>
+                  </button>
+                  <button class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>数据详情</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 章节管理 -->
+      <div class="tab-content p-6" id="chapters">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+          <h3 class="text-xl font-bold">章节管理</h3>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <select class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm w-fullsm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="all">全部作品</option>
+              <option value="1">星辰之路</option>
+              <option value="2">修仙传说</option>
+              <option value="3">都市异能</option>
+            </select>
+            <input type="text" class="search-input" placeholder="搜索章节..." oninput="searchChapters()">
+            <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap" onclick="showModal('newChapterModal')">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>发布新章节</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 章节列表 -->
+        <div class="bg-slate-700 rounded-xl overflow-hidden">
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 text-sm text-slate-400 font-medium">
+            <div class="col-span-4">章节名称</div>
+            <div class="col-span-2 hidden sm:block">所属作品</div>
+            <div class="col-span-2 hidden md:block">字数</div>
+            <div class="col-span-2 hidden lg:block">发布时间</div>
+            <div class="col-span-2 hidden sm:block">状态</div>
+            <div class="col-span-2 text-right">操作</div>
+          </div>
+
+          <!-- 章节1 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-4 font-medium">第856章 星海征途</div>
+            <div class="col-span-2 hidden sm:block text-slate-400">星辰之路</div>
+            <div class="col-span-2 hidden md:block text-slate-400">3200字</div>
+            <div class="col-span-2 hidden lg:block text-slate-400">2024-01-20</div>
+            <div class="col-span-2 hidden sm:block">
+              <span class="bg-green-600 px-2 py-1 rounded-full text-xs text-white">已发布</span>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-blue-400 hover:text-blue-300">
+                  <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button class="text-purple-400 hover:text-purple-300">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button class="text-red-400 hover:text-red-300">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 章节2 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-4 font-medium">第620章 天劫降临</div>
+            <div class="col-span-2 hidden sm:block text-slate-400">修仙传说</div>
+            <div class="col-span-2 hidden md:block text-slate-400">2800字</div>
+            <div class="col-span-2 hidden lg:block text-slate-400">2024-01-19</div>
+            <div class="col-span-2 hidden sm:block">
+              <span class="bg-green-600 px-2 py-1 rounded-full text-xs text-white">已发布</span>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-blue-400 hover:text-blue-300">
+                  <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button class="text-purple-400 hover:text-purple-300">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button class="text-red-400 hover:text-red-300">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 章节3 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-4 font-medium">第855章 突破瓶颈</div>
+            <div class="col-span-2 hidden sm:block text-slate-400">星辰之路</div>
+            <div class="col-span-2 hidden md:block text-slate-400">3500字</div>
+            <div class="col-span-2 hidden lg:block text-slate-400">2024-01-19</div>
+            <div class="col-span-2 hidden sm:block">
+              <span class="bg-green-600 px-2 py-1 rounded-full text-xs text-white">已发布</span>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-blue-400 hover:text-blue-300">
+                  <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button class="text-purple-400 hover:text-purple-300">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button class="text-red-400 hover:text-red-300">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 草稿章节 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-4 font-medium">第621章 秘境探险</div>
+            <div class="col-span-2 hidden sm:block text-slate-400">修仙传说</div>
+            <div class="col-span-2 hidden md:block text-slate-400">1200字</div>
+            <div class="col-span-2 hidden lg:block text-slate-400">2024-01-19</div>
+            <div class="col-span-2 hidden sm:block">
+              <span class="bg-yellow-600 px-2 py-1 rounded-full text-xs text-white">草稿</span>
+            </div>
+            <div class="col-span-2 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-blue-400 hover:text-blue-300">
+                  <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button class="text-green-400 hover:text-green-300">
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+                <button class="text-red-400 hover:text-red-300">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="flex items-center justify-between mt-6">
+          <div class="text-sm text-slate-400">
+            显示 1-4 条，共 128 条
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 text-slate-400 hover:border-blue-500 hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-600 text-white">1</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">2</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">3</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">...</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">32</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 text-slate-400 hover:border-blue-500 hover:text-blue-400">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 收入统计 -->
+      <div class="tab-content p-6" id="income">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+          <h3 class="text-xl font-bold">收入统计</h3>
+
+          <div class="flex flex-wrap gap-3">
+            <select class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="month">本月</option>
+              <option value="lastMonth">上月</option>
+              <option value="quarter">本季度</option>
+              <option value="year">本年</option>
+              <option value="custom">自定义</option>
+            </select>
+            <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>导出数据</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 收入概览 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="bg-slate-700 rounded-xl p-6">
+            <div class="text-slate-400 text-sm mb-2">本月收入</div>
+            <div class="text-3xl font-bold text-yellow-400 mb-2">¥12,580</div>
+            <div class="flex items-center text-green-400 text-sm">
+              <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
+              <span>较上月增长 12.5%</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-700 rounded-xl p-6">
+            <div class="text-slate-400 text-sm mb-2">累计收入</div>
+            <div class="text-3xl font-bold text-yellow-400 mb-2">¥286,350</div>
+            <div class="flex items-center text-slate-400 text-sm">
+              <span>已提现: ¥210,000</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-700 rounded-xl p-6">
+            <div class="text-slate-400 text-sm mb-2">待结算</div>
+            <div class="text-3xl font-bold text-yellow-400 mb-2">¥8,320</div>
+            <div class="flex items-center text-blue-400 text-sm">
+              <button>
+                <i data-lucide="credit-card" class="w-4 h-4 mr-1"></i>
+                <span>申请提现</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收入图表 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-slate-700 rounded-xl p-6 lg:col-span-2">
+            <h3 class="text-lg font-bold mb-4">收入趋势</h3>
+            <div class="h-64">
+              <canvas id="incomeTrendChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-slate-700 rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4">收入来源</h3>
+            <div class="h-64">
+              <canvas id="incomeSourceChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收入明细 -->
+        <div class="mt-6 bg-slate-700 rounded-xl overflow-hidden">
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 text-sm text-slate-400 font-medium">
+            <div class="col-span-3">日期</div>
+            <div class="col-span-4 hidden sm:block">来源</div>
+            <div class="col-span-3 hidden md:block">作品</div>
+            <div class="col-span-2 text-right">金额</div>
+          </div>
+
+          <!-- 收入记录1 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-3 font-medium">2024-01-20</div>
+            <div class="col-span-4 hidden sm:block text-slate-400">订阅分成</div>
+            <div class="col-span-3 hidden md:block text-slate-400">星辰之路</div>
+            <div class="col-span-2 text-right text-green-400 font-medium">+¥2,580</div>
+          </div>
+
+          <!-- 收入记录2 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-3 font-medium">2024-01-19</div>
+            <div class="col-span-4 hidden sm:block text-slate-400">订阅分成</div>
+            <div class="col-span-3 hidden md:block text-slate-400">星辰之路、修仙传说</div>
+            <div class="col-span-2 text-right text-green-400 font-medium">+¥3,240</div>
+          </div>
+
+          <!-- 收入记录3 -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-600 items-center hover:bg-slate-800 transition-colors">
+            <div class="col-span-3 font-medium">2024-01-18</div>
+            <div class="col-span-4 hidden sm:block text-slate-400">打赏分成</div>
+            <div class="col-span-3 hidden md:block text-slate-400">修仙传说</div>
+            <div class="col-span-2 text-right text-green-400 font-medium">+¥1,860</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 读者互动 -->
+      <div class="tab-content p-6" id="comments">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+          <h3 class="text-xl font-bold">读者互动</h3>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <select class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="all">全部作品</option>
+              <option value="1">星辰之路</option>
+              <option value="2">修仙传说</option>
+              <option value="3">都市异能</option>
+            </select>
+            <select class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="all">全部状态</option>
+              <option value="unreplied">未回复</option>
+              <option value="replied">已回复</option>
+            </select>
+            <input type="text" class="search-input" placeholder="搜索评论...">
+          </div>
+        </div>
+
+        <!-- 评论列表 -->
+        <div class="space-y-4">
+          <!-- 评论1 -->
+          <div class="bg-slate-700 rounded-xl p-6">
+            <div class="flex items-start gap-4 mb-4">
+              <img src="https://picsum.photos/id/64/100/100" alt="读者头像" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="flex items-center gap-3 mb-1">
+                  <span class="font-medium">星辰大海</span>
+                  <span class="text-xs bg-slate-600 px-2 py-0.5 rounded-full">VIP读者</span>
+                  <span class="text-xs text-slate-400">2小时前</span>
+                </div>
+                <p class="text-slate-300 mb-2">第856章写得太精彩了！主角的抉择太让人意外了，作者大大什么时候更新下一章？期待后续发展！</p>
+                <div class="text-sm text-slate-500">
+                  <span>星辰之路 - 第856章</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-600 pt-4 pl-14">
+              <div class="flex items-start gap-3 mb-4">
+                <img src="https://www.keaitupian.cn/cjpic/frombd/2/253/3570277888/3393481227.jpg?height=100&width=100" alt="作者头像" class="w-8 h-8 rounded-full" />
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-medium text-blue-400">笔名作者</span>
+                    <span class="text-xs bg-blue-600 px-2 py-0.5 rounded-full">作者</span>
+                    <span class="text-xs text-slate-400">1小时前</span>
+                  </div>
+                  <p class="text-slate-300">感谢支持！下一章会在明天更新，主角的抉择会带来更大的转折，敬请期待~</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 pl-11">
+                <button class="text-slate-400 hover:text-white text-sm flex items-center gap-1">
+                  <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                  <span>128</span>
+                </button>
+                <button class="text-blue-400 hover:text-blue-300 text-sm">回复</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 评论2 -->
+          <div class="bg-slate-700 rounded-xl p-6">
+            <div class="flex items-start gap-4 mb-4">
+              <img src="https://picsum.photos/id/65/100/100" alt="读者头像" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="flex items-center gap-3 mb-1">
+                  <span class="font-medium">修仙爱好者</span>
+                  <span class="text-xs bg-slate-600 px-2 py-0.5 rounded-full">普通读者</span>
+                  <span class="text-xs text-slate-400">昨天 18:30</span>
+                </div>
+                <p class="text-slate-300 mb-2">天劫降临这一章的描写太震撼了，请问作者大大，主角能成功渡劫吗？感觉后面会有更大的危机！</p>
+                <div class="text-sm text-slate-500">
+                  <span>修仙传说 - 第620章</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-600 pt-4 pl-14">
+              <div class="flex items-center gap-3">
+                <button class="text-slate-400 hover:text-white text-sm flex items-center gap-1">
+                  <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                  <span>86</span>
+                </button>
+                <button class="text-blue-400 hover:text-blue-300 text-sm reply-btn" data-id="2">回复</button>
+
+                <div class="reply-box hidden mt-3 w-full">
+                  <textarea class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="写下你的回复..."></textarea>
+                  <div class="flex items-center justify-end gap-2 mt-2">
+                    <button class="cancel-reply px-3 py-1 border border-slate-600 rounded-lg text-sm hover:bg-slate-800">取消</button>
+                    <button class="px-3 py-1 bg-blue-600 rounded-lg text-sm hover:bg-blue-700">发送回复</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 评论3 -->
+          <div class="bg-slate-700 rounded-xl p-6">
+            <div class="flex items-start gap-4 mb-4">
+              <img src="https://picsum.photos/id/91/100/100" alt="读者头像" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="flex items-center gap-3 mb-1">
+                  <span class="font-medium">都市迷</span>
+                  <span class="text-xs bg-purple-600 px-2 py-0.5 rounded-full">黄金会员</span>
+                  <span class="text-xs text-slate-400">3天前</span>
+                </div>
+                <p class="text-slate-300 mb-2">都市异能虽然完结了，但结局有点仓促啊，作者大大考虑写个番外吗？想看主角后续的发展！</p>
+                <div class="text-sm text-slate-500">
+                  <span>都市异能 - 第310章</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-600 pt-4 pl-14">
+              <div class="flex items-center gap-3">
+                <button class="text-slate-400 hover:text-white text-sm flex items-center gap-1">
+                  <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                  <span>52</span>
+                </button>
+                <button class="text-blue-400 hover:text-blue-300 text-sm reply-btn" data-id="3">回复</button>
+
+                <div class="reply-box hidden mt-3 w-full">
+                  <textarea class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="写下你的回复..."></textarea>
+                  <div class="flex items-center justify-end gap-2 mt-2">
+                    <button class="cancel-reply px-3 py-1 border border-slate-600 rounded-lg text-sm hover:bg-slate-800">取消</button>
+                    <button class="px-3 py-1 bg-blue-600 rounded-lg text-sm hover:bg-blue-700">发送回复</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="flex items-center justify-between mt-6">
+          <div class="text-sm text-slate-400">
+            显示 1-3 条，共 86 条
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 text-slate-400 hover:border-blue-500 hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-600 text-white">1</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">2</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">3</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">...</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 hover:border-blue-500 hover:text-blue-400">29</button>
+            <button class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-600 text-slate-400 hover:border-blue-500 hover:text-blue-400">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-slate-900 border-t border-slate-800 py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center gap-2 mb-4 md:mb-0">
+          <i data-lucide="book-open" class="w-6 h-6 text-blue-500"></i>
+          <span class="text-xl font-bold gradient-text">书海阁</span>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm text-slate-400">
+          <a href="#" class="hover:text-white transition-colors">关于我们</a>
+          <a href="#" class="hover:text-white transition-colors">作者协议</a>
+          <a href="#" class="hover:text-white transition-colors">帮助中心</a>
+          <a href="#" class="hover:text-white transition-colors">联系客服</a>
+          <a href="#" class="hover:text-white transition-colors">版权声明</a>
+        </div>
+      </div>
+
+      <div class="mt-6 text-center text-sm text-slate-500">
+        © 2024 书海阁 版权所有 | 营业执照 | 出版物经营许可证
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- 发布章节弹窗 -->
+<div class="modal" id="newChapterModal">
+  <div class="modal-content fade-in">
+    <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+      <h3 class="text-xl font-bold">发布新章节</h3>
+      <button class="text-slate-400 hover:text-white" onclick="hideModal('newChapterModal')">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">选择作品</label>
+          <select class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="1">星辰之路</option>
+            <option value="2">修仙传说</option>
+            <option value="3">都市异能</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">章节标题</label>
+          <input type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入章节标题">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">章节内容</label>
+          <div class="border border-slate-600 rounded-lg overflow-hidden">
+            <div class="bg-slate-800 px-4 py-2 border-b border-slate-600 flex items-center gap-3">
+              <button class="text-slate-400 hover:text-white p-1">
+                <i data-lucide="bold" class="w-4 h-4"></i>
+              </button>
+              <button class="text-slate-400 hover:text-white p-1">
+                <i data-lucide="italic" class="w-4 h-4"></i>
+              </button>
+              <button class="text-slate-400 hover:text-white p-1">
+                <i data-lucide="underline" class="w-4 h-4"></i>
+              </button>
+              <div class="h-4 border-r border-slate-600"></div>
+              <button class="text-slate-400 hover:text-white p-1">
+                <i data-lucide="list-ol" class="w-4 h-4"></i>
+              </button>
+              <button class="text-slate-400 hover:text-white p-1">
+                <i data-lucide="list-ul" class="w-4 h-4"></i>
+              </button>
+              <div class="h-4 border-r border-slate-600"></div>
+              <button class="text-slate-400 hover:text-white p-1">
+                <i data-lucide="image" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <textarea class="w-full bg-slate-700 p-4 min-h-[300px] focus:outline-none" placeholder="请输入章节内容..."></textarea>
+          </div>
+          <div class="flex justify-end mt-1 text-sm text-slate-400">
+            <span id="wordCount">0 字</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">发布设置</label>
+          <div class="flex items-center gap-2">
+            <input type="radio" id="publishNow" name="publishSetting" checked class="text-blue-500 focus:ring-blue-500">
+            <label for="publishNow" class="text-sm">立即发布</label>
+
+            <input type="radio" id="saveDraft" name="publishSetting" class="text-blue-500 focus:ring-blue-500 ml-4">
+            <label for="saveDraft" class="text-sm">保存为草稿</label>
+
+            <input type="radio" id="schedulePublish" name="publishSetting" class="text-blue-500 focus:ring-blue-500 ml-4">
+            <label for="schedulePublish" class="text-sm">定时发布</label>
+          </div>
+
+          <div class="mt-2 hidden" id="publishTimeContainer">
+            <input type="datetime-local" class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 border-t border-slate-700 flex items-center justify-end gap-3">
+      <button class="px-4 py-2 border border-slate-600 rounded-lg text-sm hover:bg-slate-700 transition-colors" onclick="hideModal('newChapterModal')">取消</button>
+      <button class="px-4 py-2 bg-blue-600 rounded-lg text-sm hover:bg-blue-700 transition-colors">发布章节</button>
+    </div>
+  </div>
+</div>
+
+<!-- 创建作品弹窗 -->
+<div class="modal" id="newBookModal">
+  <div class="modal-content fade-in">
+    <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+      <h3 class="text-xl font-bold">创建新作品</h3>
+      <button class="text-slate-400 hover:text-white" onclick="hideModal('newBookModal')">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="md:col-span-1">
+          <label class="block text-sm font-medium text-slate-300 mb-2">作品封面</label>
+          <div class="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer">
+            <i data-lucide="image" class="w-12 h-12 text-slate-400 mx-auto mb-2"></i>
+            <p class="text-sm text-slate-400">点击上传封面图片</p>
+            <p class="text-xs text-slate-500 mt-1">建议尺寸: 225x300px</p>
+            <input type="file" class="hidden" accept="image/*">
+          </div>
+        </div>
+
+        <div class="md:col-span-2 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">作品标题</label>
+            <input type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入作品标题">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1">作品类型</label>
+              <select class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">请选择类型</option>
+                <option value="fantasy">玄幻</option>
+                <option value="sci-fi">科幻</option>
+                <option value="urban">都市</option>
+                <option value="history">历史</option>
+                <option value="game">游戏</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1">作品状态</label>
+              <select class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="serializing">连载中</option>
+                <option value="finished">已完结</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">作品简介</label>
+            <textarea class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows="5" placeholder="请输入作品简介，吸引读者阅读..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1">标签</label>
+            <div class="flex flex-wrap gap-2">
+              <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                热血
+                <button class="text-white hover:text-slate-200">
+                  <i data-lucide="x" class="w-3 h-3"></i>
+                </button>
+              </span>
+              <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                冒险
+                <button class="text-white hover:text-slate-200">
+                  <i data-lucide="x" class="w-3 h-3"></i>
+                </button>
+              </span>
+              <input type="text" class="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-32" placeholder="添加标签">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 border-t border-slate-700 flex items-center justify-end gap-3">
+      <button class="px-4 py-2 border border-slate-600 rounded-lg text-sm hover:bg-slate-700 transition-colors" onclick="hideModal('newBookModal')">取消</button>
+      <button class="px-4 py-2 bg-blue-600 rounded-lg text-sm hover:bg-blue-700 transition-colors">创建作品</button>
+    </div>
+  </div>
+</div>
+
+<!-- 通知弹窗 -->
+<div class="modal" id="notificationModal">
+  <div class="modal-content fade-in max-w-2xl">
+    <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+      <h3 class="text-xl font-bold">通知消息</h3>
+      <button class="text-slate-400 hover:text-white" onclick="hideModal('notificationModal')">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="p-0">
+      <div class="divide-y divide-slate-700">
+        <!-- 通知1 -->
+        <div class="p-4 hover:bg-slate-700 transition-colors">
+          <div class="flex items-start gap-3">
+            <div class="bg-blue-600 p-2 rounded-full">
+              <i data-lucide="award" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-start justify-between">
+                <h4 class="font-medium">作品推荐通知</h4>
+                <span class="text-xs text-slate-400">1小时前</span>
+              </div>
+              <p class="text-sm text-slate-300 mt-1">恭喜！您的作品《星辰之路》已被选中为本周推荐作品，将在首页展示3天。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 通知2 -->
+        <div class="p-4 hover:bg-slate-700 transition-colors bg-slate-700/50">
+          <div class="flex items-start gap-3">
+            <div class="bg-green-600 p-2 rounded-full">
+              <i data-lucide="dollar-sign" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-start justify-between">
+                <h4 class="font-medium">收入到账通知</h4>
+                <span class="text-xs text-slate-400">昨天</span>
+              </div>
+              <p class="text-sm text-slate-300 mt-1">您的1月份收入¥12,580已到账，可在"收入统计"中查看详情。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 通知3 -->
+        <div class="p-4 hover:bg-slate-700 transition-colors bg-slate-700/50">
+          <div class="flex items-start gap-3">
+            <div class="bg-purple-600 p-2 rounded-full">
+              <i data-lucide="gift" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-start justify-between">
+                <h4 class="font-medium">读者打赏通知</h4>
+                <span class="text-xs text-slate-400">2天前</span>
+              </div>
+              <p class="text-sm text-slate-300 mt-1">读者"星辰大海"在《星辰之路》中打赏了1000书币，感谢您的创作！</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 通知4 -->
+        <div class="p-4 hover:bg-slate-700 transition-colors">
+          <div class="flex items-start gap-3">
+            <div class="bg-amber-600 p-2 rounded-full">
+              <i data-lucide="calendar" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-start justify-between">
+                <h4 class="font-medium">创作活动提醒</h4>
+                <span class="text-xs text-slate-400">3天前</span>
+              </div>
+              <p class="text-sm text-slate-300 mt-1">本周将举办"春季创作大赛"，参与即可获得流量扶持，点击查看详情。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-slate-700 text-center">
+      <button class="text-blue-400 hover:text-blue-300 text-sm">查看全部通知</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 初始化Lucide图标
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+
+    // 初始化图表
+    initCharts();
+
+    // 章节搜索功能
+    function searchChapters() {
+      const searchTerm = document.querySelector('input[placeholder="搜索章节..."]').value.toLowerCase();
+      const chapterRows = document.querySelectorAll('#chapters .grid.grid-cols-12:not(.border-b.border-slate-600)');
+
+      chapterRows.forEach(row => {
+        const chapterName = row.querySelector('.col-span-4').textContent.toLowerCase();
+        if (chapterName.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // 作品搜索功能
+    function searchBooks() {
+      const searchTerm = document.getElementById('bookSearch').value.toLowerCase();
+      const bookItems = document.querySelectorAll('.book-item');
+
+      bookItems.forEach(item => {
+        const bookTitle = item.querySelector('h4').textContent.toLowerCase();
+        const bookDesc = item.querySelector('.text-sm.text-slate-400').textContent.toLowerCase();
+        if (bookTitle.includes(searchTerm) || bookDesc.includes(searchTerm)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    // 标签页切换
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 移除所有标签按钮的激活状态
+        tabButtons.forEach(btn => btn.classList.remove('active', 'text-blue-400'));
+        tabButtons.forEach(btn => btn.classList.add('text-slate-400'));
+
+        // 添加当前标签按钮的激活状态
+        button.classList.add('active', 'text-blue-400');
+        button.classList.remove('text-slate-400');
+
+        // 隐藏所有标签内容
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // 显示当前标签内容
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // 作品搜索功能
+    const bookSearch = document.getElementById('bookSearch');
+    if (bookSearch) {
+      bookSearch.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const bookItems = document.querySelectorAll('.book-item');
+
+        bookItems.forEach(item => {
+          const bookTitle = item.querySelector('h4').textContent.toLowerCase();
+          if (bookTitle.includes(searchTerm)) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // 回复按钮功能
+    const replyBtns = document.querySelectorAll('.reply-btn');
+    replyBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const id = this.getAttribute('data-id');
+        const replyBox = this.nextElementSibling;
+
+        // 切换回复框显示状态
+        replyBox.classList.toggle('hidden');
+
+        // 如果显示回复框，自动聚焦
+        if (!replyBox.classList.contains('hidden')) {
+          replyBox.querySelector('textarea').focus();
+        }
+      });
+    });
+
+    // 取消回复按钮
+    const cancelReplyBtns = document.querySelectorAll('.cancel-reply');
+    cancelReplyBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const replyBox = this.closest('.reply-box');
+        replyBox.classList.add('hidden');
+      });
+    });
+
+    // 定时发布选项切换
+    const publishRadios = document.querySelectorAll('input[name="publishSetting"]');
+    const publishTimeContainer = document.getElementById('publishTimeContainer');
+
+    publishRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        if (this.id === 'schedulePublish') {
+          publishTimeContainer.classList.remove('hidden');
+        } else {
+          publishTimeContainer.classList.add('hidden');
+        }
+      });
+    });
+
+    // 字数统计
+    const contentTextarea = document.querySelector('textarea[placeholder="请输入章节内容..."]');
+    const wordCountEl = document.getElementById('wordCount');
+
+    if (contentTextarea && wordCountEl) {
+      contentTextarea.addEventListener('input', function() {
+        const wordCount = this.value.length;
+        wordCountEl.textContent = `${wordCount} 字`;
+      });
+    }
+
+    // 发布章节按钮
+    document.getElementById('showNewChapterBtn').addEventListener('click', function() {
+      showModal('newChapterModal');
+    });
+
+    document.getElementById('showNewBookBtn').addEventListener('click', function() {
+      showModal('newBookModal');
+    });
+
+    // 通知按钮
+    document.getElementById('notificationBtn').addEventListener('click', function() {
+      showModal('notificationModal');
+    });
+  });
+
+  // 初始化图表
+  function initCharts() {
+    // 阅读趋势图表
+    const readingCtx = document.getElementById('readingTrendChart');
+    if (readingCtx) {
+      new Chart(readingCtx, {
+        type: 'line',
+        data: {
+          labels: ['1月1日', '1月5日', '1月10日', '1月15日', '1月20日', '1月25日', '1月30日'],
+          datasets: [{
+            label: '阅读量',
+            data: [15000, 18000, 22000, 19000, 23000, 25000, 28000],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.7)'
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.7)'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 作品数据分布图表
+    const bookDataCtx = document.getElementById('bookDataChart');
+    if (bookDataCtx) {
+      new Chart(bookDataCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['星辰之路', '修仙传说', '都市异能'],
+          datasets: [{
+            data: [58, 32, 10],
+            backgroundColor: [
+              '#3b82f6',
+              '#10b981',
+              '#f59e0b'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                padding: 15
+              }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    // 收入趋势图表
+    const incomeTrendCtx = document.getElementById('incomeTrendChart');
+    if (incomeTrendCtx) {
+      new Chart(incomeTrendCtx, {
+        type: 'bar',
+        data: {
+          labels: ['8月', '9月', '10月', '11月', '12月', '1月'],
+          datasets: [{
+            label: '月收入',
+            data: [8500, 9200, 10500, 11800, 10200, 12580],
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.7)'
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.05)'
+              },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                callback: function(value) {
+                  return '¥' + value;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 收入来源图表
+    const incomeSourceCtx = document.getElementById('incomeSourceChart');
+    if (incomeSourceCtx) {
+      new Chart(incomeSourceCtx, {
+        type: 'pie',
+        data: {
+          labels: ['订阅分成', '打赏分成', '版权收益', '其他'],
+          datasets: [{
+            data: [75, 15, 8, 2],
+            backgroundColor: [
+              '#3b82f6',
+              '#8b5cf6',
+              '#10b981',
+              '#64748b'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'rgba(255, 255, 255, 0.7)',
+                padding: 15
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // 切换标签页
+  function switchTab(tabId) {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+      if (button.getAttribute('data-tab') === tabId) {
+        button.click();
+      }
+    });
+  }
+
+  // 显示弹窗
+  function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('active');
+      // 防止背景滚动
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  // 隐藏弹窗
+  function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove('active');
+      // 恢复背景滚动
+      document.body.style.overflow = '';
+    }
+  }
+
+  // 点击弹窗外部关闭弹窗
+  window.addEventListener('click', function(e) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+</script>
+</body>
+</html>
