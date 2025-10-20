@@ -12,15 +12,15 @@
     </select>
 
     <insert id="insert" parameterType="com.inovel.entity.BookContent">
-        INSERT INTO book_content (book_id, chapter_title, chapter_content, chapter_order)
-        VALUES (#{bookId}, #{chapterTitle}, #{chapterContent}, #{chapterOrder})
+        INSERT INTO book_content (book_id, title, content, chapter_order, word_count)
+        VALUES (#{bookId}, #{title}, #{content}, #{chapterOrder}, #{wordCount})
     </insert>
 
     <insert id="insertBatch" parameterType="list">
-        INSERT INTO book_content (book_id, chapter_title, chapter_content, chapter_order)
+        INSERT INTO book_content (book_id, title, content, chapter_order, word_count)
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.bookId}, #{item.chapterTitle}, #{item.chapterContent}, #{item.chapterOrder})
+            (#{item.bookId}, #{item.title}, #{item.content}, #{item.chapterOrder}, #{item.wordCount})
         </foreach>
     </insert>
 

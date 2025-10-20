@@ -5,7 +5,7 @@
 <mapper namespace="com.inovel.mapper.BookMapper">
 
 <select id="findAll" resultType="com.inovel.entity.Book">
-    SELECT * FROM book  WHERE visibility = 'pending'
+    SELECT * FROM book WHERE visibility = 'public' AND status = 1 ORDER BY create_time DESC
 </select>
 
 <select id="findById" parameterType="long" resultType="com.inovel.entity.Book">
@@ -13,26 +13,27 @@
 </select>
 
 <select id="findByCategory" parameterType="string" resultType="com.inovel.entity.Book">
-    SELECT * FROM book WHERE category = #{category}
+    SELECT * FROM book WHERE category = #{category} AND visibility = 'public' AND status = 1 ORDER BY create_time DESC
 </select>
 
 <select id="searchByKeyword" parameterType="string" resultType="com.inovel.entity.Book">
     SELECT * FROM book
-    WHERE title LIKE CONCAT('%', #{keyword}, '%')
-    OR author LIKE CONCAT('%', #{keyword}, '%')
+    WHERE (title LIKE CONCAT('%', #{keyword}, '%')
+    OR author LIKE CONCAT('%', #{keyword}, '%'))
+    AND visibility = 'public' AND status = 1
+    ORDER BY create_time DESC
 </select>
 
 <insert id="insert" parameterType="com.inovel.entity.Book" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO book (title, author, cover, category, intro, file_path, file_type, is_free, publisher, publish_time, isbn, brand, uploader_id, visibility)
-        VALUES (#{title}, #{author}, #{cover}, #{category}, #{intro}, #{filePath}, #{fileType}, #{isFree}, #{publisher}, #{publishTime}, #{isbn}, #{brand},#{uploader_id},#{visibility})
+        INSERT INTO book (title, author, cover, category, description, file_path, file_type, upload_user_id, visibility, status)
+        VALUES (#{title}, #{author}, #{cover}, #{category}, #{description}, #{filePath}, #{fileType}, #{uploadUserId}, #{visibility}, #{status})
 </insert>
 
 
 <update id="update" parameterType="com.inovel.entity.Book">
     UPDATE book
-    SET title=#{title}, author=#{author}, cover=#{cover}, category=#{category}, intro=#{intro},
-    file_path=#{filePath}, file_type=#{fileType}, is_free=#{isFree}, publisher=#{publisher},
-    publish_time=#{publishTime}, isbn=#{isbn}, brand=#{brand}
+    SET title=#{title}, author=#{author}, cover=#{cover}, category=#{category}, description=#{description},
+    file_path=#{filePath}, file_type=#{fileType}, status=#{status}
     WHERE id=#{id}
 </update>
 
@@ -45,6 +46,8 @@
         WHERE category = #{category}
           AND (title LIKE CONCAT('%', #{keyword}, '%')
             OR author LIKE CONCAT('%', #{keyword}, '%'))
+          AND visibility = 'public' AND status = 1
+        ORDER BY create_time DESC
 </select>
     <!-- 根据书籍ID列表和关键字查询 -->
     <select id="findByIdsAndKeyword" resultType="com.inovel.entity.Book">

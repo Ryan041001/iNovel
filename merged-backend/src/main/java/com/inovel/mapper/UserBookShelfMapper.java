@@ -11,7 +11,7 @@ public interface UserBookShelfMapper {
     @Select("SELECT * FROM user_shelf WHERE user_id=#{userId}")
     List<UserShelf> findByUserId(Long userId);
 
-    @Insert("INSERT INTO user_shelf(user_id, book_id, added_time) VALUES(#{userId}, #{bookId}, NOW())")
+    @Insert("INSERT INTO user_shelf(user_id, book_id, add_time, last_read_time) VALUES(#{userId}, #{bookId}, NOW(), NOW())")
     void addBook(Long userId, Long bookId);
 
     @Delete("DELETE FROM user_shelf WHERE user_id=#{userId} AND book_id=#{bookId}")
